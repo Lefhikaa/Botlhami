@@ -22,6 +22,13 @@ SECRET_KEY = env("SECRET_KEY", default="dev-only-insecure-key-change-me" if DEBU
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 
+# Azure App Service sets WEBSITE_HOSTNAME to the app's real default domain (which may include
+# a random suffix and region), so trust it automatically.
+_azure_host = env("WEBSITE_HOSTNAME", default="")
+if _azure_host:
+    ALLOWED_HOSTS.append(_azure_host)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_azure_host}")
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -37,6 +44,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "core.middleware.HealthCheckMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
