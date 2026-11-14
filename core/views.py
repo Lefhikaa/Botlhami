@@ -14,6 +14,7 @@ HOME_BY_ROLE = {
     "adjudicator": "ideas:adjudication",
     "admin": "ideas:screening",
     "observer": "ideas:pipeline",
+    "consultant": "chat:console",
 }
 
 

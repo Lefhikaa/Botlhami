@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "audit",
     "core",
     "ideas",
+    "chat",
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% block title %}Chat reports{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Chat reports</h1><p class="muted">Online chat analytics for the last {{ a.days }} days.</p></div>
+<div class="row"><a class="btn btn-sm{% if a.days == 7 %} btn-primary{% endif %}" href="?days=7">7 days</a><a class="btn btn-sm{% if a.days == 30 %} btn-primary{% endif %}" href="?days=30">30 days</a><a class="btn btn-sm{% if a.days == 90 %} btn-primary{% endif %}" href="?days=90">90 days</a></div></div>
+<div class="kpis">
+  <div class="card kpi"><span class="muted small">Chats started</span><strong>{{ a.total }}</strong><span class="small muted">{{ a.answered }} answered by an agent</span></div>
+  <div class="card kpi"><span class="muted small">Average wait</span><strong>{% if a.avg_wait is not None %}{{ a.avg_wait|floatformat:0 }} s{% else %}—{% endif %}</strong><span class="small muted">From start to an agent joining</span></div>
+  <div class="card kpi"><span class="muted small">Average chat length</span><strong>{% if a.avg_duration is not None %}{% widthratio a.avg_duration 60 1 %} min{% else %}—{% endif %}</strong><span class="small muted">Answered chats that have ended</span></div>
+  <div class="card kpi"><span class="muted small">Satisfaction</span><strong>{% if a.avg_rating %}{{ a.avg_rating }} / 5{% else %}—{% endif %}</strong><span class="small muted">{{ a.ratings }} rating{{ a.ratings|pluralize }}</span></div>
+</div>
+<div class="grid2 mt">
+  <section class="card"><h2>Chats by hour</h2>
+    <div class="hbars">{% for label, n in a.by_hour %}<div class="hbar" title="{{ label }}: {{ n }} chat{{ n|pluralize }}"><span class="small">{{ label }}</span><span class="track"><i style="width: {% widthratio n peak 100 %}%"></i></span><span class="num small">{{ n }}</span></div>{% endfor %}</div>
+    <p class="small muted">Service hours are 09:00–16:00. Chats started outside them become offline messages.</p></section>
+  <section class="card"><h2>Chats by day</h2>
+    <div class="hbars">{% for label, n in a.by_day %}<div class="hbar" title="{{ label }}: {{ n }} chat{{ n|pluralize }}"><span class="small">{{ label }}</span><span class="track"><i style="width: {% widthratio n peak_day 100 %}%"></i></span><span class="num small">{{ n }}</span></div>{% endfor %}</div></section>
+  <section class="card"><h2>By agent</h2>
+    {% if a.per_agent %}<table class="table"><thead><tr><th>Agent</th><th class="num">Chats</th><th class="num">Closed</th></tr></thead><tbody>{% for r in a.per_agent %}<tr><td>{{ r.agent__first_name }} {{ r.agent__last_name }}</td><td class="num">{{ r.chats }}</td><td class="num">{{ r.closed }}</td></tr>{% endfor %}</tbody></table>{% else %}<p class="muted">No answered chats yet.</p>{% endif %}</section>
+  <section class="card"><h2>Availability and topics</h2>
+    <table class="table"><tbody>
+      <tr><td>Started when all agents were busy</td><td class="num">{{ a.busy }}</td></tr>
+      <tr><td>Offline messages (out of hours or no agent)</td><td class="num">{{ a.offline }}</td></tr>
+      <tr><td>Never answered</td><td class="num">{{ a.unanswered }}</td></tr>
+      {% for t, n in a.topics %}<tr><td>Topic: {{ t }}</td><td class="num">{{ n }}</td></tr>{% endfor %}
+    </tbody></table></section>
+</div>
+{% endblock %}

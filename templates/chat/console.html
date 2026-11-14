@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% load static %}{% block title %}Chat console{% endblock %}{% block main_class %}container wide{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Chat console</h1><p class="muted">Take several chats at once. Clients see an "agent not available" message outside 09:00–16:00 on working days, or when every agent is full.</p></div>
+  <div class="row"><a class="btn btn-sm" href="{% url 'chat:reports' %}">Chat reports</a>
+  <label class="switch"><input type="checkbox" id="presence" data-url="{% url 'chat:presence' %}" {% if presence.available %}checked{% endif %}> <span id="presence-label">{% if presence.available %}Available{% else %}Away{% endif %}</span></label></div></div>
+<div class="console" id="console" data-state="{% url 'chat:state' %}" data-poll="/chat/0/poll/" data-send="/chat/0/send/" data-close="/chat/0/close/" data-accept="/chat/0/accept/">
+  <aside class="card">
+    <p class="small muted" id="service-state"></p>
+    <h3>Waiting <span class="badge" id="queue-count">0</span></h3><ul class="chat-list" id="queue"></ul>
+    <h3 class="mt">My chats <span class="badge" id="mine-count">0</span></h3><ul class="chat-list" id="mine"></ul>
+  </aside>
+  <section class="card chat-pane">
+    <div id="pane-empty" class="muted center">Pick a chat on the left, or accept one from the queue.</div>
+    <div id="pane" hidden data-role="agent">
+      <div class="spread"><h2 id="pane-title"></h2><button class="btn btn-sm" id="chat-end">End chat</button></div>
+      <div class="chat-log" id="chat-log" aria-live="polite"></div>
+      <form id="chat-form" class="chat-input"><label class="sr" for="chat-body">Reply</label><textarea id="chat-body" rows="2" maxlength="2000" placeholder="Type a reply…"></textarea><button class="btn btn-primary">Send</button></form>
+    </div>
+  </section>
+</div>
+<meta name="csrf-token" content="{{ csrf_token }}">
+<script src="{% static 'js/chat.js' %}" defer></script>
+{% endblock %}

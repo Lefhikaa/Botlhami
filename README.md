@@ -11,7 +11,8 @@ It takes ideas from submission through review, feedback and approval to award, w
 | Accounts: self-registration, email verification, password and one-time-code sign-in, password change and reset | Done |
 | Roles, permission checks, append-only audit trail, security headers, login lockout | Done |
 | Idea submission with mandatory-field checks, drafts and documents; screening and evaluator assignment; weighted scoring with blind review and conflict-of-interest checks; adjudication, revision rounds and awards; pipeline board; notifications and email alerts | Done |
-| Live chat, admin content, FAQs, alerts, reports | Planned |
+| Live chat with CEDA consultants: several agents and several chats each, 09:00–16:00 on working days, public holidays, busy and after-hours notices, offline messages answered by email, ratings and chat analytics | Done |
+| Admin content, FAQs, reports dashboard, support page | Planned |
 
 ## Run it locally
 

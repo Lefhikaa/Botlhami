@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% load static %}{% block title %}Chat with CEDA{% endblock %}
+{% block content %}
+<section class="card narrow chat-card">
+  <h1>Chat with a CEDA consultant</h1>
+  <p class="muted small">Available from 09:00 to 16:00, Monday to Friday, except public holidays.</p>
+  {% if conv %}
+    <div id="chat" data-poll="{% url 'chat:poll' conv.pk %}" data-send="{% url 'chat:send' conv.pk %}" data-close="{% url 'chat:close' conv.pk %}" data-rate="{% url 'chat:rate' conv.pk %}" data-role="customer">
+      <div class="chat-log" id="chat-log" aria-live="polite"></div>
+      <form id="chat-form" class="chat-input"><label class="sr" for="chat-body">Message</label><textarea id="chat-body" rows="2" maxlength="2000" placeholder="Type your message…"></textarea><button class="btn btn-primary">Send</button></form>
+      <div class="row spread mt"><span class="small muted" id="chat-status"></span><button class="linklike small" id="chat-end">End chat</button></div>
+      <div id="chat-rating" hidden class="rating"><p><strong>How helpful was this chat?</strong></p><div class="row">{% for n in "12345" %}<button class="btn btn-sm" data-rate-value="{{ n }}">{{ n }} ★</button>{% endfor %}</div></div>
+      <form id="chat-new" method="post" action="{% url 'chat:new' %}" hidden>{% csrf_token %}<button class="btn mt">Start a new chat</button></form>
+    </div>
+  {% else %}
+    {% if state != "open" %}<div class="msg msg-warning" role="status">{{ notice }}</div>{% else %}<div class="msg msg-success" role="status">Consultants are online now.</div>{% endif %}
+    <form method="post" novalidate>{% csrf_token %}
+      {% include "_form_errors.html" %}
+      {% for field in form %}{% include "_field.html" %}{% endfor %}
+      <button class="btn btn-primary btn-block">{% if state == "open" or state == "busy" %}Start chat{% else %}Leave a message{% endif %}</button>
+    </form>
+  {% endif %}
+</section>
+<meta name="csrf-token" content="{{ csrf_token }}">
+<script src="{% static 'js/chat.js' %}" defer></script>
+{% endblock %}

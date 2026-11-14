@@ -20,6 +20,7 @@
         {% if user.role == "adjudicator" or user.role == "admin" %}<a href="{% url 'ideas:adjudication' %}">Adjudication</a>{% endif %}
         {% if user.role == "admin" %}<a href="{% url 'ideas:screening' %}">Screening</a>{% endif %}
         {% if user.role == "admin" or user.role == "adjudicator" or user.role == "observer" %}<a href="{% url 'ideas:pipeline' %}">Pipeline</a>{% endif %}
+        {% if user.role == "consultant" or user.role == "admin" %}<a href="{% url 'chat:console' %}">Chat console</a>{% endif %}
         {% if user.role == "admin" %}<a href="{% url 'admin:index' %}">Admin</a>{% endif %}
         <a href="{% url 'ideas:notifications' %}" aria-label="Notifications">🔔{% if unread_count %}<span class="badge">{{ unread_count }}</span>{% endif %}</a>
         <a href="{% url 'accounts:profile' %}">{{ user.first_name|default:user.email }}</a>
@@ -38,6 +39,7 @@
     {% endif %}
     {% block content %}{% endblock %}
   </main>
+  {% if not user.is_authenticated or user.role == "submitter" %}{% if request.resolver_match.app_name != "chat" %}<a class="btn btn-primary chat-fab" href="{% url 'chat:client' %}">💬 Chat with CEDA</a>{% endif %}{% endif %}
   <footer class="footer">
     <span>&copy; {% now "Y" %} {{ SITE_NAME }}</span>
     <span>Personal data is handled under Botswana's Data Protection Act, 2024.</span>
