@@ -1,0 +1,37 @@
+name: Test and deploy to Azure
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python manage.py test
+        env:
+          DEBUG: "True"
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    # Runs only once the AZURE_WEBAPP_NAME variable and publish-profile secret exist.
+    if: ${{ vars.AZURE_WEBAPP_NAME != '' }}
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .

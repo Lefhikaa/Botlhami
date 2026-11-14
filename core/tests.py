@@ -46,3 +46,24 @@ class AuditTests(TestCase):
             event.save()
         with self.assertRaises(RuntimeError):
             event.delete()
+
+
+class AzureEmailBackendTests(TestCase):
+    def test_sends_plain_and_html_via_acs(self):
+        from unittest import mock
+
+        from django.core.mail import EmailMultiAlternatives
+        from django.test import override_settings
+
+        from core.email_backends import AzureCommunicationEmailBackend
+
+        with override_settings(ACS_CONNECTION_STRING="endpoint=https://x/;accesskey=y", ACS_SENDER_ADDRESS="DoNotReply@x.azurecomm.net"):
+            backend = AzureCommunicationEmailBackend()
+            backend._client = mock.Mock()
+            msg = EmailMultiAlternatives("Hi", "plain body", None, ["a@example.bw"])
+            msg.attach_alternative("<p>html</p>", "text/html")
+            self.assertEqual(backend.send_messages([msg]), 1)
+            payload = backend._client.begin_send.call_args.args[0]
+            self.assertEqual(payload["senderAddress"], "DoNotReply@x.azurecomm.net")
+            self.assertEqual(payload["content"]["html"], "<p>html</p>")
+            self.assertEqual(payload["recipients"]["to"], [{"address": "a@example.bw"}])

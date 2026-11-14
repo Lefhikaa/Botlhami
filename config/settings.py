@@ -114,6 +114,8 @@ EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Botlhami <no-reply@botlhami.local>")
+ACS_CONNECTION_STRING = env("ACS_CONNECTION_STRING", default="")
+ACS_SENDER_ADDRESS = env("ACS_SENDER_ADDRESS", default="")
 
 # One-time PINs
 OTP_LENGTH = 6
@@ -130,6 +132,7 @@ X_FRAME_OPTIONS = "DENY"
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+    SECURE_REDIRECT_EXEMPT = [r"^health/$"]  # Azure's internal health probe
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
@@ -141,7 +144,9 @@ CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
 
 SITE_NAME = "Botlhami"
 SITE_URL = env("SITE_URL", default="http://127.0.0.1:8000")
-MEDIA_ROOT = BASE_DIR / "media"  # private: documents are served only through an access-checked view
+# Private: documents are served only through an access-checked view. On Azure, point this at
+# /home/data/media, which survives redeploys.
+MEDIA_ROOT = env("MEDIA_ROOT", default=str(BASE_DIR / "media"))
 DATA_RETENTION_MONTHS = env.int("DATA_RETENTION_MONTHS", default=24)
 
 LOGGING = {

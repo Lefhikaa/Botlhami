@@ -50,6 +50,10 @@ python manage.py test
 
 All configuration comes from environment variables. See `.env.example`.
 
+## Deployment
+
+The app is hosted on Azure App Service in South Africa North, and is deployed automatically from `main` by GitHub Actions. See [DEPLOYMENT.md](DEPLOYMENT.md) for the one-time setup.
+
 ## Security notes
 
 - Passwords are hashed with Argon2. One-time codes are stored hashed, expire after 10 minutes, and allow 5 attempts.
