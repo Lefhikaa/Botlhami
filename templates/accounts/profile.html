@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Your profile{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Your profile</h1>
+  <p class="muted">{{ user.email }} · {{ user.get_role_display }}{% if user.email_verified %} · <span class="ok">email verified</span>{% endif %}</p>
+  <form method="post" novalidate>{% csrf_token %}
+    <div class="grid2">{% include "_field.html" with field=form.first_name %}{% include "_field.html" with field=form.last_name %}</div>
+    {% include "_field.html" with field=form.phone %}
+    {% include "_field.html" with field=form.organisation %}
+    <button class="btn btn-primary">Save</button>
+    <a class="btn" href="{% url 'accounts:password_change' %}">Change password</a>
+  </form>
+</section>
+{% endblock %}

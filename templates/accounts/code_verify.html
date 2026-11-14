@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Enter your code{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Enter your code</h1>
+  <p class="muted">Check the inbox for <strong>{{ email }}</strong>. The code expires in 10 minutes.</p>
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "_field.html" with field=form.code %}
+    <button class="btn btn-primary btn-block">Sign in</button>
+  </form>
+  <p class="small center"><a href="{% url 'accounts:code_request' %}">Send a new code</a></p>
+</section>
+{% endblock %}

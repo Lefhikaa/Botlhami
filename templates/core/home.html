@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}Welcome{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Submit, evaluate and recognise Botswana's best ideas</h1>
+  <p>{{ SITE_NAME }} takes every idea from submission through review, feedback and approval to award, with live tracking at every step.</p>
+  <div class="row">
+    <a class="btn btn-primary" href="{% url 'accounts:register' %}">Create an account</a>
+    <a class="btn" href="{% url 'accounts:login' %}">Sign in</a>
+  </div>
+</section>
+{% endblock %}

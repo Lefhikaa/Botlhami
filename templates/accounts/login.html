@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}Sign in{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Sign in</h1>
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "_form_errors.html" %}
+    {% include "_field.html" with field=form.username %}
+    {% include "_field.html" with field=form.password %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="btn btn-primary btn-block">Sign in</button>
+  </form>
+  <div class="divider"><span>or</span></div>
+  <a class="btn btn-block" href="{% url 'accounts:code_request' %}">Email me a one-time sign-in code</a>
+  <p class="small center"><a href="{% url 'accounts:password_reset' %}">Forgot your password?</a> · <a href="{% url 'accounts:register' %}">Create an account</a></p>
+</section>
+{% endblock %}

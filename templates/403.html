@@ -1,0 +1,2 @@
+{% extends "base.html" %}{% block title %}Access restricted{% endblock %}
+{% block content %}<section class="card narrow center"><h1>Access restricted</h1><p class="muted">Your role doesn't allow access to this page. The attempt has been recorded in the audit trail.</p><a class="btn" href="{% url 'core:dashboard' %}">Back to your dashboard</a></section>{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Sign in with a code{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Sign in with a code</h1>
+  <p class="muted">We'll email you a 6-digit code. No password needed.</p>
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "_field.html" with field=form.email %}
+    <button class="btn btn-primary btn-block">Send code</button>
+  </form>
+  <p class="small center"><a href="{% url 'accounts:login' %}">Sign in with a password instead</a></p>
+</section>
+{% endblock %}

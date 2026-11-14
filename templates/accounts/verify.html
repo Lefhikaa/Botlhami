@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Verify your email{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Verify your email</h1>
+  <p class="muted">Enter the 6-digit code we sent to <strong>{{ email }}</strong>. It expires in 10 minutes.</p>
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "_field.html" with field=form.code %}
+    <button class="btn btn-primary btn-block">Verify</button>
+  </form>
+  <form method="post" action="{% url 'accounts:resend' %}" class="center">{% csrf_token %}<button class="linklike small">Send a new code</button></form>
+</section>
+{% endblock %}
