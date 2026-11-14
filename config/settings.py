@@ -20,7 +20,8 @@ environ.Env.read_env(BASE_DIR / ".env")
 DEBUG = env("DEBUG")
 SECRET_KEY = env("SECRET_KEY", default="dev-only-insecure-key-change-me" if DEBUG else environ.Env.NOTSET)
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
-CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
+# Accept bare hostnames too, adding https:// (a missing scheme stops Django from starting).
+CSRF_TRUSTED_ORIGINS = [o if "://" in o else f"https://{o}" for o in env("CSRF_TRUSTED_ORIGINS") if o.strip()]
 
 # Azure App Service sets WEBSITE_HOSTNAME to the app's real default domain (which may include
 # a random suffix and region), so trust it automatically.
