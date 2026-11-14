@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% load ideas_tags %}{% block title %}My ideas{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>My ideas</h1><p class="muted">Track every idea you've submitted, live.</p></div><a class="btn btn-primary" href="{% url 'ideas:new' %}">+ Submit a new idea</a></div>
+{% for idea in ideas %}
+<article class="card idea-row">
+  <div>
+    <div class="row"><span class="tag">{{ idea.reference }}</span>{% status_pill idea %}</div>
+    <h2 class="idea-title"><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h2>
+    <p class="muted small">{{ idea.sector|default:"No sector yet" }} · updated {{ idea.updated_at|date:"j M Y" }}</p>
+    {% if idea.status == "draft" %}<a class="btn btn-primary btn-sm" href="{% url 'ideas:edit' idea.pk %}">Continue draft</a>
+    {% elif idea.status == "revision" %}<a class="btn btn-primary btn-sm" href="{% url 'ideas:edit' idea.pk %}">Revise and resubmit</a>{% endif %}
+  </div>
+  <div>{% if idea.status != "draft" %}{% stepper idea %}{% else %}<p class="muted small">Not submitted yet. Only you can see drafts.</p>{% endif %}</div>
+</article>
+{% empty %}
+<div class="card center"><p>You haven't started any ideas yet.</p><a class="btn btn-primary" href="{% url 'ideas:new' %}">Submit your first idea</a></div>
+{% endfor %}
+{% endblock %}

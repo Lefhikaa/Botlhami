@@ -15,7 +15,13 @@
     </a>
     <nav class="topnav" aria-label="Account">
       {% if user.is_authenticated %}
-        <a href="{% url 'core:dashboard' %}">Dashboard</a>
+        {% if user.role == "submitter" %}<a href="{% url 'ideas:mine' %}">My ideas</a><a href="{% url 'ideas:new' %}">Submit an idea</a>{% endif %}
+        {% if user.role == "evaluator" %}<a href="{% url 'ideas:queue' %}">Evaluation queue</a>{% endif %}
+        {% if user.role == "adjudicator" or user.role == "admin" %}<a href="{% url 'ideas:adjudication' %}">Adjudication</a>{% endif %}
+        {% if user.role == "admin" %}<a href="{% url 'ideas:screening' %}">Screening</a>{% endif %}
+        {% if user.role == "admin" or user.role == "adjudicator" or user.role == "observer" %}<a href="{% url 'ideas:pipeline' %}">Pipeline</a>{% endif %}
+        {% if user.role == "admin" %}<a href="{% url 'admin:index' %}">Admin</a>{% endif %}
+        <a href="{% url 'ideas:notifications' %}" aria-label="Notifications">🔔{% if unread_count %}<span class="badge">{{ unread_count }}</span>{% endif %}</a>
         <a href="{% url 'accounts:profile' %}">{{ user.first_name|default:user.email }}</a>
         <form method="post" action="{% url 'accounts:logout' %}" class="inline">{% csrf_token %}<button class="linklike">Sign out</button></form>
       {% else %}

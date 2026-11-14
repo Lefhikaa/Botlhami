@@ -37,7 +37,7 @@ class RegistrationTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
 
         r = self.client.post(reverse("accounts:verify"), {"code": code_from_last_email()})
-        self.assertRedirects(r, reverse("core:dashboard"))
+        self.assertRedirects(r, reverse("core:dashboard"), fetch_redirect_response=False)
         user.refresh_from_db()
         self.assertTrue(user.email_verified)
         self.assertTrue(AuditEvent.objects.filter(action="account.email_verified", actor=user).exists())
@@ -82,7 +82,7 @@ class SignInTests(TestCase):
 
     def test_password_sign_in(self):
         r = self.client.post(reverse("accounts:login"), {"username": "tumo@example.bw", "password": STRONG})
-        self.assertRedirects(r, reverse("core:dashboard"))
+        self.assertRedirects(r, reverse("core:dashboard"), fetch_redirect_response=False)
         self.assertTrue(AuditEvent.objects.filter(action="auth.login", actor=self.user).exists())
 
     def test_unverified_user_is_sent_to_verify(self):
@@ -104,7 +104,7 @@ class SignInTests(TestCase):
         r = self.client.post(reverse("accounts:code_request"), {"email": "tumo@example.bw"})
         self.assertRedirects(r, reverse("accounts:code_verify"))
         r = self.client.post(reverse("accounts:code_verify"), {"code": code_from_last_email()})
-        self.assertRedirects(r, reverse("core:dashboard"))
+        self.assertRedirects(r, reverse("core:dashboard"), fetch_redirect_response=False)
 
     def test_code_request_does_not_reveal_unknown_emails(self):
         r = self.client.post(reverse("accounts:code_request"), {"email": "nobody@example.bw"}, follow=True)

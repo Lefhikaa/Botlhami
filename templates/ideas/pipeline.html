@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% load ideas_tags %}{% block title %}Pipeline{% endblock %}{% block main_class %}container wide{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Innovation pipeline</h1><p class="muted">Every submitted idea by stage, updated live.{% if user.role == "observer" %} Read-only: idea content is hidden to protect applicants' intellectual property.{% endif %}</p></div></div>
+<div class="board">
+{% for label, ideas in columns %}<div class="col"><h3 class="col-head"><span>{{ label }}</span><span class="badge">{{ ideas|length }}</span></h3>
+{% for i in ideas %}<a class="mini" href="{% url 'ideas:detail' i.pk %}"><span class="muted small">{{ i.reference }}</span><strong>{{ i.title }}</strong><span class="small {% if i.overdue %}bad{% else %}muted{% endif %}">{{ i.days_in_status }} days in stage{% if i.overdue %} · overdue{% endif %}</span></a>
+{% empty %}<p class="muted small">None</p>{% endfor %}</div>{% endfor %}
+</div>
+{% endblock %}

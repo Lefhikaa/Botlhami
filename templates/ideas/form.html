@@ -1,0 +1,38 @@
+{% extends "base.html" %}{% block title %}{% if idea %}Edit {{ idea.reference }}{% else %}Submit an idea{% endif %}{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>{% if idea.status == "revision" %}Revise and resubmit{% elif idea %}Continue your idea{% else %}Submit an idea{% endif %}</h1>
+<p class="muted">Fields marked <span class="req">*</span> must be completed before you submit. You can save a draft at any time.</p></div>{% if idea %}<span class="tag">{{ idea.reference }}</span>{% endif %}</div>
+<form method="post" enctype="multipart/form-data" class="card" novalidate data-completeness>{% csrf_token %}
+  {% include "_form_errors.html" %}
+  {% if revision_note %}<div class="msg msg-warning"><strong>Feedback to address:</strong> {{ revision_note.note }}</div>{% endif %}
+  {% if missing %}<div class="msg msg-info"><strong>Still needed before you can submit:</strong> {{ missing|join:", " }}.</div>{% endif %}
+  <div class="meter-row"><span class="small"><strong>Completeness</strong></span><span class="small muted" id="meter-label"></span></div>
+  <div class="meter"><i id="meter-bar"></i></div>
+
+  <fieldset><legend>1. The idea</legend>
+    {% include "_field.html" with field=form.title %}
+    <div class="grid3">{% include "_field.html" with field=form.sector %}{% include "_field.html" with field=form.maturity %}{% include "_field.html" with field=form.location %}</div>
+    {% include "_field.html" with field=form.problem %}
+    {% include "_field.html" with field=form.solution %}
+  </fieldset>
+  <fieldset><legend>2. Impact</legend>
+    {% include "_field.html" with field=form.beneficiaries %}
+    {% include "_field.html" with field=form.impact %}
+    <div class="grid2">{% include "_field.html" with field=form.jobs %}{% include "_field.html" with field=form.budget %}</div>
+    <div class="field"><span class="label">{{ form.sdgs.label }} <span class="req">*</span></span><div class="checks">{% for cb in form.sdgs %}<label class="check">{{ cb.tag }} <span>{{ cb.choice_label }}</span></label>{% endfor %}</div></div>
+  </fieldset>
+  <fieldset><legend>3. Team and documents</legend>
+    {% include "_field.html" with field=form.team %}
+    {% include "_field.html" with field=form.documents %}
+    {% if idea.documents.exists %}<ul class="docs">{% for d in idea.documents.all %}<li><a href="{% url 'ideas:document' idea.pk d.pk %}">📎 {{ d.original_name }}</a> <span class="muted small">{{ d.size|filesizeformat }}</span>
+      <button class="linklike small" form="del-{{ d.pk }}">Remove</button></li>{% endfor %}</ul>{% endif %}
+  </fieldset>
+  <fieldset><legend>4. Declaration</legend>{% include "_field.html" with field=form.ip_declared %}</fieldset>
+  <div class="row end">
+    <button class="btn" name="action" value="draft">Save draft</button>
+    <button class="btn btn-primary" name="action" value="submit">{% if idea.status == "revision" %}Resubmit for review{% else %}Submit idea{% endif %}</button>
+  </div>
+</form>
+{% for d in idea.documents.all %}<form id="del-{{ d.pk }}" method="post" action="{% url 'ideas:delete_document' idea.pk d.pk %}">{% csrf_token %}</form>{% endfor %}
+<script src="{% load static %}{% static 'js/completeness.js' %}" defer></script>
+{% endblock %}

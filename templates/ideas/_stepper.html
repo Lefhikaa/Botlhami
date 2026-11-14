@@ -1,0 +1,3 @@
+<ol class="stepper" aria-label="Progress">
+{% for s in steps %}<li class="{{ s.state }}"><span class="dot">{% if s.state == "done" %}✓{% elif s.state == "stopped" %}✕{% else %}{{ s.n }}{% endif %}</span><span>{{ s.name }}</span></li>{% endfor %}
+</ol>

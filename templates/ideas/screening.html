@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% load ideas_tags %}{% block title %}Screening{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Screening and assignment</h1><p class="muted">Check new submissions are complete, assign evaluators and follow evaluation progress. Screening target: {{ ws.screening_days }} days.</p></div></div>
+<section class="card"><h2>New submissions</h2>
+{% if new %}<table class="table"><thead><tr><th>Idea</th><th>Applicant</th><th>Submitted</th><th>Missing items</th><th></th></tr></thead><tbody>
+{% for i in new %}<tr><td><a href="{% url 'ideas:detail' i.pk %}"><strong>{{ i.title }}</strong></a><div class="muted small">{{ i.reference }} · {{ i.sector }}</div></td><td>{{ i.submitter.organisation|default:i.submitter }}</td><td>{{ i.submitted_at|date:"j M" }}{% if i.is_overdue %} <span class="pill s-rejected">Overdue</span>{% endif %}</td><td>{{ i.missing_items|length }}</td><td><a class="btn btn-primary btn-sm" href="{% url 'ideas:detail' i.pk %}">Screen</a></td></tr>{% endfor %}
+</tbody></table>{% else %}<p class="muted">No new submissions.</p>{% endif %}
+</section>
+<section class="card mt"><h2>Under evaluation</h2>
+{% if rows %}<table class="table"><thead><tr><th>Idea</th><th>Evaluators</th><th>Days</th><th></th></tr></thead><tbody>
+{% for i, prog in rows %}<tr><td><a href="{% url 'ideas:detail' i.pk %}"><strong>{{ i.title }}</strong></a><div class="muted small">{{ i.reference }}{% if i.round > 1 %} · round {{ i.round }}{% endif %}</div></td>
+<td class="small">{% for a, done in prog %}{{ a.evaluator }} {% if done %}<span class="ok">✓</span>{% else %}<span class="muted">(pending)</span>{% endif %}<br>{% endfor %}</td><td>{{ i.days_in_status }}</td>
+<td><form method="post" action="{% url 'ideas:remind' i.pk %}">{% csrf_token %}<button class="btn btn-sm">Send reminder</button></form></td></tr>{% endfor %}
+</tbody></table>{% else %}<p class="muted">Nothing under evaluation.</p>{% endif %}
+</section>
+{% endblock %}

@@ -10,7 +10,7 @@ It takes ideas from submission through review, feedback and approval to award, w
 | --- | --- |
 | Accounts: self-registration, email verification, password and one-time-code sign-in, password change and reset | Done |
 | Roles, permission checks, append-only audit trail, security headers, login lockout | Done |
-| Idea submission, evaluation workflow, adjudication, awards | In progress |
+| Idea submission with mandatory-field checks, drafts and documents; screening and evaluator assignment; weighted scoring with blind review and conflict-of-interest checks; adjudication, revision rounds and awards; pipeline board; notifications and email alerts | Done |
 | Live chat, admin content, FAQs, alerts, reports | Planned |
 
 ## Run it locally
@@ -24,6 +24,12 @@ cp .env.example .env
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
+```
+
+To load demo accounts for every role, plus sample ideas:
+
+```bash
+python manage.py seed_demo --password "choose-a-demo-password"
 ```
 
 Open http://127.0.0.1:8000. Locally, emails such as one-time codes are printed in the terminal instead of being sent.

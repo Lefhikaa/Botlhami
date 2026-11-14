@@ -2,4 +2,8 @@ from django.conf import settings
 
 
 def site(request):
-    return {"SITE_NAME": settings.SITE_NAME}
+    ctx = {"SITE_NAME": settings.SITE_NAME}
+    user = getattr(request, "user", None)
+    if user is not None and user.is_authenticated:
+        ctx["unread_count"] = user.notifications.filter(read_at__isnull=True).count()
+    return ctx

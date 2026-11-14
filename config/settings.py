@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "accounts",
     "audit",
     "core",
+    "ideas",
 ]
 
 MIDDLEWARE = [
@@ -139,6 +140,8 @@ if not DEBUG:
 CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
 
 SITE_NAME = "Botlhami"
+SITE_URL = env("SITE_URL", default="http://127.0.0.1:8000")
+MEDIA_ROOT = BASE_DIR / "media"  # private: documents are served only through an access-checked view
 DATA_RETENTION_MONTHS = env.int("DATA_RETENTION_MONTHS", default=24)
 
 LOGGING = {

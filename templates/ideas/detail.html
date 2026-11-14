@@ -1,0 +1,150 @@
+{% extends "base.html" %}{% load ideas_tags %}{% block title %}{{ idea.reference }}{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="row"><span class="tag">{{ idea.reference }}</span>{% status_pill idea %}{% if idea.round > 1 %}<span class="tag">Round {{ idea.round }}</span>{% endif %}</div>
+  <h1 class="mt">{{ idea.title }}</h1>
+  <p class="muted small">{{ idea.sector|default:"—" }} · {{ idea.maturity|default:"—" }} · {{ idea.location|default:"—" }}{% if idea.submitted_at %} · submitted {{ idea.submitted_at|date:"j M Y" }}{% endif %}</p>
+  {% if idea.status != "draft" %}{% stepper idea %}{% endif %}
+</section>
+
+<div class="detail">
+  <div class="stack">
+    <section class="card">
+      <h2>Idea</h2>
+      {% if full %}
+      <dl class="kv">
+        <dt>Applicant</dt><dd>{% if hide_applicant %}<span class="muted">Hidden for blind review</span>{% else %}{{ idea.submitter }}{% if idea.submitter.organisation %}, {{ idea.submitter.organisation }}{% endif %}{% endif %}</dd>
+        <dt>Problem</dt><dd>{{ idea.problem|linebreaksbr|default:"—" }}</dd>
+        <dt>Solution</dt><dd>{{ idea.solution|linebreaksbr|default:"—" }}</dd>
+        <dt>Who benefits</dt><dd>{{ idea.beneficiaries|default:"—" }}</dd>
+        <dt>Expected impact</dt><dd>{{ idea.impact|linebreaksbr|default:"—" }}</dd>
+        <dt>Jobs in 24 months</dt><dd>{{ idea.jobs|default_if_none:"—" }}</dd>
+        <dt>Estimated budget</dt><dd>{% if idea.budget is not None %}P {{ idea.budget|floatformat:"0g" }}{% else %}—{% endif %}</dd>
+        <dt>SDGs</dt><dd>{% for s in idea.sdgs %}<span class="tag">SDG {{ s }}</span> {% empty %}—{% endfor %}</dd>
+        <dt>Team</dt><dd>{% if hide_applicant %}<span class="muted">Hidden for blind review</span>{% else %}{{ idea.team|linebreaksbr|default:"—" }}{% endif %}</dd>
+        <dt>Documents</dt><dd>{% for d in idea.documents.all %}<a class="tag" href="{% url 'ideas:document' idea.pk d.pk %}">📎 {{ d.original_name }}</a> {% empty %}—{% endfor %}</dd>
+      </dl>
+      {% else %}
+      <div class="restricted">Observers see progress and scores only. The full idea is visible only to the applicant, assigned evaluators, adjudicators and the Innovation Office, to protect the applicant's intellectual property.</div>
+      {% endif %}
+    </section>
+
+    {% if evaluations %}
+    <section class="card">
+      <h2>Evaluations</h2>
+      {% for e in evaluations %}
+      <div class="eval">
+        <div class="spread"><strong>{{ e.evaluator }}</strong><span>{% score_badge e.total %}</span></div>
+        <p class="muted small">Round {{ e.round }} · {{ e.submitted_at|date:"j M Y" }} · recommends <strong>{{ e.get_recommendation_display }}</strong></p>
+        <table class="mini-table">{% for name, weight, score in e.criterion_scores %}<tr><td>{{ name }} <span class="muted">({{ weight }}%)</span></td><td class="num">{{ score }}/5</td></tr>{% endfor %}</table>
+        <p><strong>To applicant:</strong> {{ e.comment }}</p>
+        {% if e.private_note %}<p class="muted"><strong>Private note:</strong> {{ e.private_note }}</p>{% endif %}
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if feedback %}
+    <section class="card">
+      <h2>Evaluator feedback</h2>
+      <p class="muted small">Evaluators stay anonymous. Feedback appears once each review round is complete.</p>
+      {% for e in feedback %}<div class="msg"><p class="small muted">Evaluator {{ forloop.counter }} · round {{ e.round }} · recommends {{ e.get_recommendation_display }}</p>{{ e.comment }}</div>{% endfor %}
+    </section>
+    {% endif %}
+
+    {% if full %}
+    <section class="card">
+      <h2>Questions and feedback</h2>
+      <div class="thread">
+      {% for m in messages_list %}
+        <div class="msg{% if m.author_id == user.pk %} mine{% endif %}">
+          <p class="small muted"><strong>{% if user.role == "submitter" and m.author.role == "evaluator" %}Evaluator{% elif hide_applicant and m.author_id == idea.submitter_id %}Applicant{% else %}{{ m.author }}{% endif %}</strong> · {{ m.created_at|date:"j M, H:i" }}</p>
+          {{ m.body|linebreaksbr }}
+        </div>
+      {% empty %}<p class="muted small">No messages yet. Evaluators can ask the applicant questions here, and applicants can reply.</p>{% endfor %}
+      </div>
+      {% if can_post and idea.status != "draft" %}
+      <form method="post" action="{% url 'ideas:message' idea.pk %}" class="mt">{% csrf_token %}{% include "_field.html" with field=message_form.body %}<button class="btn btn-primary btn-sm">Post</button></form>
+      {% endif %}
+    </section>
+    {% endif %}
+  </div>
+
+  <aside class="stack">
+    {% if user.pk == idea.submitter_id %}
+      {% if idea.status == "draft" %}<section class="card"><h3>Draft</h3><p class="small muted">Only you can see this draft.</p><a class="btn btn-primary" href="{% url 'ideas:edit' idea.pk %}">Continue editing</a></section>{% endif %}
+      {% if idea.status == "revision" %}<section class="card warn"><h3>Action needed</h3><p class="small">{{ idea.history.last.note }}</p><a class="btn btn-primary" href="{% url 'ideas:edit' idea.pk %}">Revise and resubmit</a></section>{% endif %}
+      {% if idea.status == "awarded" %}<section class="card ok-card"><h3>🏆 {{ idea.award.get_category_display }}</h3><p class="small">{{ idea.award.message }}</p></section>{% endif %}
+      {% if idea.status == "rejected" %}<section class="card"><h3>Outcome</h3><p class="small">{{ idea.history.last.note }}</p></section>{% endif %}
+    {% endif %}
+
+    {% if evaluators %}
+    <form method="post" action="{% url 'ideas:screen' idea.pk %}" class="card">{% csrf_token %}
+      <h3>Screening</h3>
+      {% with missing=idea.missing_items %}
+        {% if missing %}<div class="msg msg-warning small">Missing: {{ missing|join:", " }}. Return it to the applicant.</div>
+        {% else %}<div class="msg msg-success small">All mandatory items are complete.</div>{% endif %}
+      {% endwith %}
+      <p class="label">Assign evaluators ({{ ws.evaluators_per_idea }} needed)</p>
+      {% for ev in evaluators %}<label class="check"><input type="checkbox" name="evaluators" value="{{ ev.pk }}"> <span>{{ ev }} <span class="muted small">· {{ ev.open_reviews }} open</span></span></label>{% empty %}<p class="muted small">No evaluators yet. Add users with the Evaluator role.</p>{% endfor %}
+      <button class="btn btn-primary btn-block" name="action" value="accept">Accept and assign</button>
+      <div class="field mt">{{ return_form.note.label_tag }}{{ return_form.note }}</div>
+      <button class="btn btn-block" name="action" value="return">Return to applicant</button>
+    </form>
+    {% endif %}
+
+    {% if progress %}
+    <section class="card"><h3>Evaluation progress</h3>
+      {% for a, done in progress %}<p class="small">{% if done %}<span class="ok">✓</span>{% else %}⏳{% endif %} {{ a.evaluator }} <span class="muted">· due {{ a.due_at|date:"j M" }}</span></p>{% endfor %}
+      <form method="post" action="{% url 'ideas:remind' idea.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-sm">Remind pending evaluators</button></form>
+      {% if spare_evaluators %}<form method="post" action="{% url 'ideas:add_evaluator' idea.pk %}" class="row mt">{% csrf_token %}<select name="evaluator" aria-label="Evaluator to add">{% for ev in spare_evaluators %}<option value="{{ ev.pk }}">{{ ev }}</option>{% endfor %}</select><button class="btn btn-sm">Add evaluator</button></form>{% endif %}
+    </section>
+    {% endif %}
+
+    {% if eval_form %}
+    <form method="post" action="{% url 'ideas:evaluate' idea.pk %}" class="card accent">{% csrf_token %}
+      <h3>Your evaluation</h3>
+      {% include "_field.html" with field=eval_form.coi_declared %}
+      <p class="small muted">Have a conflict? <button class="linklike" form="recuse-form">Recuse yourself</button>.</p>
+      {% for c, f in eval_form.score_fields %}
+      <fieldset class="crit"><legend>{{ c.name }} <span class="muted small">· {{ c.weight }}%</span></legend><p class="small muted">{{ c.guidance }}</p>
+        <div class="scale">{% for r in f %}<label>{{ r.tag }}<b>{{ r.data.value }}</b>{{ r.choice_label }}</label>{% endfor %}</div>
+      </fieldset>
+      {% endfor %}
+      {% include "_field.html" with field=eval_form.comment %}
+      {% include "_field.html" with field=eval_form.private_note %}
+      {% include "_field.html" with field=eval_form.recommendation %}
+      <button class="btn btn-primary btn-block">Submit evaluation</button>
+    </form>
+    <form id="recuse-form" method="post" action="{% url 'ideas:recuse' idea.pk %}">{% csrf_token %}</form>
+    {% endif %}
+
+    {% if combined is not None %}
+    <section class="card"><h3>Score summary (round {{ idea.round }})</h3>
+      <div class="spread"><span class="muted small">Combined score · pass mark {{ ws.pass_mark }}</span>{% score_badge combined %}</div>
+      {% if gap >= ws.score_gap_flag and user.role != "submitter" %}<div class="msg msg-warning small mt">Evaluators differ by {{ gap }} points. Consider discussing before deciding.</div>{% endif %}
+    </section>
+    {% endif %}
+
+    {% if decision_form %}
+    <form method="post" action="{% url 'ideas:decide' idea.pk %}" class="card accent">{% csrf_token %}
+      <h3>Adjudication decision</h3>
+      {% include "_field.html" with field=decision_form.reason %}
+      <div class="row"><button class="btn btn-ok" name="outcome" value="approved">Approve</button><button class="btn btn-warn" name="outcome" value="revision">Request revision</button><button class="btn btn-bad" name="outcome" value="rejected">Decline</button></div>
+    </form>
+    {% endif %}
+
+    {% if award_form %}
+    <form method="post" action="{% url 'ideas:award' idea.pk %}" class="card ok-card">{% csrf_token %}
+      <h3>Grant award</h3>
+      {% for field in award_form %}{% include "_field.html" %}{% endfor %}
+      <button class="btn btn-ok btn-block">Grant award</button>
+    </form>
+    {% endif %}
+
+    <section class="card"><h3>History</h3>
+      <ol class="timeline">{% for h in history reversed %}<li><strong>{{ h.get_to_status_display }}</strong><span class="muted small"> · {{ h.at|date:"j M, H:i" }} · {% if not h.actor %}automatic{% elif hide_applicant and h.actor_id == idea.submitter_id %}Applicant{% elif user.role == "observer" %}{{ h.actor.get_role_display }}{% else %}{{ h.actor }}{% endif %}</span>{% if h.note and full %}<br><span class="small">{{ h.note }}</span>{% endif %}</li>{% endfor %}</ol>
+    </section>
+  </aside>
+</div>
+{% endblock %}

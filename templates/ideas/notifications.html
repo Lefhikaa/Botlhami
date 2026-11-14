@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Notifications</h1><p class="muted">Updates on your work. We also email them unless you switch alerts off in <a href="{% url 'accounts:profile' %}">your profile</a>.</p></div>
+<form method="post">{% csrf_token %}<button class="btn btn-sm">Mark all as read</button></form></div>
+<section class="card">{% for n in items %}<div class="note{% if not n.read_at %} unread{% endif %}"><span>{{ n.text }}</span><span class="muted small">{{ n.created_at|date:"j M, H:i" }}{% if n.idea %} · <a href="{% url 'ideas:detail' n.idea.pk %}">Open</a>{% endif %}</span></div>{% empty %}<p class="muted">No notifications yet.</p>{% endfor %}</section>
+{% endblock %}

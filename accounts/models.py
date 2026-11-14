@@ -50,6 +50,10 @@ class User(AbstractUser):
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.SUBMITTER)
     email_verified = models.BooleanField(default=False)
     data_consent_at = models.DateTimeField(null=True, blank=True)
+    email_alerts = models.BooleanField(
+        "email me when my submissions are updated", default=True,
+        help_text="Free alerts. You can switch them off at any time.",
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]

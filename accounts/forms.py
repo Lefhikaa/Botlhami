@@ -81,7 +81,7 @@ class EmailOnlyForm(forms.Form):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "phone", "organisation"]
+        fields = ["first_name", "last_name", "phone", "organisation", "email_alerts"]
         help_texts = {"phone": PHONE_HELP}
 
     def clean_phone(self):

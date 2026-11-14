@@ -8,8 +8,20 @@ def home(request):
     return render(request, "core/home.html")
 
 
+HOME_BY_ROLE = {
+    "submitter": "ideas:mine",
+    "evaluator": "ideas:queue",
+    "adjudicator": "ideas:adjudication",
+    "admin": "ideas:screening",
+    "observer": "ideas:pipeline",
+}
+
+
 @login_required
 def dashboard(request):
+    target = HOME_BY_ROLE.get(request.user.role)
+    if target:
+        return redirect(target)
     return render(request, "core/dashboard.html")
 
 

@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% load ideas_tags %}{% block title %}Evaluation queue{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Evaluation queue</h1><p class="muted">Ideas assigned to you that still need your score.</p></div></div>
+<section class="card"><h2>To evaluate</h2>
+{% if pending %}<table class="table"><thead><tr><th>Idea</th><th>Sector</th><th>Due</th><th></th></tr></thead><tbody>
+{% for a in pending %}<tr><td><a href="{% url 'ideas:detail' a.idea.pk %}"><strong>{{ a.idea.title }}</strong></a><div class="muted small">{{ a.idea.reference }}{% if a.round > 1 %} · round {{ a.round }}{% endif %}</div></td><td>{{ a.idea.sector }}</td><td>{% if a.due_at < now %}<span class="pill s-rejected">Overdue</span>{% else %}{{ a.due_at|date:"j M" }}{% endif %}</td><td><a class="btn btn-primary btn-sm" href="{% url 'ideas:detail' a.idea.pk %}">Evaluate</a></td></tr>{% endfor %}
+</tbody></table>{% else %}<p class="muted">You're all caught up.</p>{% endif %}
+</section>
+<section class="card mt"><h2>Your evaluations</h2>
+{% if done %}<table class="table"><thead><tr><th>Idea</th><th>Submitted</th><th class="num">Your score</th><th>Recommendation</th><th>Status now</th></tr></thead><tbody>
+{% for e in done %}<tr><td><a href="{% url 'ideas:detail' e.idea.pk %}">{{ e.idea.title }}</a><div class="muted small">{{ e.idea.reference }} · round {{ e.round }}</div></td><td>{{ e.submitted_at|date:"j M" }}</td><td class="num">{% score_badge e.total %}</td><td>{{ e.get_recommendation_display }}</td><td>{% status_pill e.idea %}</td></tr>{% endfor %}
+</tbody></table>{% else %}<p class="muted">None yet.</p>{% endif %}
+</section>
+{% endblock %}
