@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% block title %}Help centre{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Help centre</h1><p class="muted">Answers to common questions, and who to contact for permits, registration and compliance.</p></div></div>
+{% include "support/_helpnav.html" with active="faq" %}
+<div class="detail">
+  <div class="stack">
+    <form method="get" class="row search" role="search"><label class="sr" for="q">Search the FAQs</label><input id="q" name="q" value="{{ q }}" placeholder="Search the FAQs, for example: documents, password, award"><button class="btn">Search</button>{% if q %}<a class="small" href="{% url 'support:help' %}">Clear</a>{% endif %}</form>
+    {% if q %}<p class="muted small">{{ found }} result{{ found|pluralize }} for “{{ q }}”.</p>{% endif %}
+    {% for label, items in groups %}
+    <section class="card"><h2>{{ label }}</h2>
+      {% for f in items %}<details class="faq"><summary>{{ f.question }}</summary><p>{{ f.answer|linebreaksbr }}</p></details>{% endfor %}
+    </section>
+    {% empty %}<section class="card"><p class="muted">No questions match that search. Try other words, or <a href="{% url 'chat:client' %}">ask us in the chat</a>.</p></section>{% endfor %}
+  </div>
+  <aside class="stack">
+    <section class="card"><h2>Regulatory authorities</h2>
+      <p class="muted small">Who to contact for registration, licences and compliance.</p>
+      <ul class="contacts">{% for r in regulators %}<li>
+        <strong>{{ r.name }}{% if r.acronym %} ({{ r.acronym }}){% endif %}</strong>
+        <span class="small muted">{{ r.helps_with }}</span>
+        <span class="small">{% if r.phone %}☎ <a href="tel:{{ r.phone|cut:' ' }}">{{ r.phone }}</a> {% endif %}{% if r.email %}✉ <a href="mailto:{{ r.email }}">{{ r.email }}</a> {% endif %}{% if r.website %}<a href="{{ r.website }}" rel="noopener" target="_blank">{{ r.website|cut:"https://"|cut:"www." }}</a>{% endif %}</span>
+      </li>{% empty %}<li class="muted">No contacts published yet.</li>{% endfor %}</ul>
+    </section>
+    <section class="card"><h2>Still stuck?</h2>
+      <p class="small">Chat with a CEDA consultant from 09:00 to 16:00 on working days, or raise a support ticket at any time.</p>
+      <div class="row"><a class="btn btn-sm" href="{% url 'chat:client' %}">💬 Chat with CEDA</a><a class="btn btn-sm btn-primary" href="{% url 'support:new' %}">Raise a ticket</a></div>
+    </section>
+  </aside>
+</div>
+{% endblock %}

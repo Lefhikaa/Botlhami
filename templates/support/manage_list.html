@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% block title %}Manage content{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Manage content</h1><p class="muted">Changes appear on the public Help centre straight away. Every change is recorded in the audit trail.</p></div>
+{% if not conf.fixed %}<a class="btn btn-primary" href="{% url 'support:manage_new' kind %}">+ Add {{ conf.noun }}</a>{% endif %}</div>
+{% include "support/_managenav.html" %}
+<section class="card mt">
+{% if kind == "documents" %}
+  <table class="table"><thead><tr><th>Document</th><th>Type</th><th>File</th><th>Shown</th><th></th></tr></thead><tbody>
+  {% for r in items %}<tr><td><strong>{{ r.title }}</strong>{% if r.mandatory %} <span class="pill s-revision">Required</span>{% endif %}<div class="small muted">{{ r.description|truncatechars:90 }}</div></td><td>{{ r.get_kind_display }}</td><td class="small">{% if r.file %}<a href="{% url 'support:download' r.pk %}">{{ r.original_name }}</a><div class="muted">{{ r.size|filesizeformat }} · {{ r.updated_at|date:"j M" }}</div>{% else %}<span class="bad">No file</span>{% endif %}</td><td>{{ r.published|yesno:"Yes,Hidden" }}</td>
+  <td class="actions">{% include "support/_rowactions.html" with obj=r %}</td></tr>
+  {% empty %}<tr><td colspan="5" class="muted">No documents yet. Add the application form and the documents applicants must supply.</td></tr>{% endfor %}</tbody></table>
+{% elif kind == "faqs" %}
+  <table class="table"><thead><tr><th>Question</th><th>Category</th><th>Shown</th><th></th></tr></thead><tbody>
+  {% for f in items %}<tr><td><strong>{{ f.question }}</strong><div class="small muted">{{ f.answer|truncatechars:110 }}</div></td><td>{{ f.get_category_display }}</td><td>{{ f.published|yesno:"Yes,Hidden" }}</td><td class="actions">{% include "support/_rowactions.html" with obj=f %}</td></tr>
+  {% empty %}<tr><td colspan="4" class="muted">No FAQs yet.</td></tr>{% endfor %}</tbody></table>
+{% elif kind == "regulators" %}
+  <table class="table"><thead><tr><th>Authority</th><th>Contact</th><th>Shown</th><th></th></tr></thead><tbody>
+  {% for r in items %}<tr><td><strong>{{ r.name }}{% if r.acronym %} ({{ r.acronym }}){% endif %}</strong><div class="small muted">{{ r.helps_with }}</div></td><td class="small">{{ r.phone|default:"" }}{% if r.phone and r.email %}<br>{% endif %}{{ r.email|default:"" }}{% if r.website %}<br>{{ r.website }}{% endif %}{% if not r.phone and not r.email %}<div class="muted">No phone or email yet</div>{% endif %}</td><td>{{ r.published|yesno:"Yes,Hidden" }}</td><td class="actions">{% include "support/_rowactions.html" with obj=r %}</td></tr>
+  {% empty %}<tr><td colspan="4" class="muted">No contacts yet.</td></tr>{% endfor %}</tbody></table>
+{% else %}
+  <table class="table"><thead><tr><th>Severity</th><th>Applies when</th><th class="num">Response</th><th class="num">Resolution</th><th></th></tr></thead><tbody>
+  {% for l in items %}<tr><td><span class="pill sev-{{ l.severity }}">{{ l.label }}</span></td><td>{{ l.description }}</td><td class="num">{{ l.response_label }}</td><td class="num">{{ l.resolution_label }}</td><td class="actions"><a class="btn btn-sm" href="{% url 'support:manage_edit' kind l.pk %}">Edit</a></td></tr>{% endfor %}</tbody></table>
+  <p class="small muted">Changes apply to new tickets. Existing tickets keep the targets they were given.</p>
+{% endif %}
+</section>
+{% endblock %}

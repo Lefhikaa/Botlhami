@@ -225,3 +225,52 @@ form.card fieldset + fieldset { border-top: 1px solid var(--line); padding-top: 
 .hbar .track i { display: block; height: 12px; min-width: 0; background: var(--brand); border-radius: 0 4px 4px 0; }
 .chat-fab { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 20; box-shadow: 0 4px 14px rgba(0,0,0,.18); border-radius: 999px; }
 @media (max-width: 900px) { .console, .kpis { grid-template-columns: 1fr; } }
+
+/* --- help centre, support desk, content management, reports --- */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.mt-s { margin-top: .4rem; }
+.narrow-wide { max-width: 760px; }
+.tabs { display: flex; gap: .25rem; flex-wrap: wrap; border-bottom: 1px solid var(--line); margin-bottom: 1rem; }
+.tabs a { padding: .5rem .85rem; text-decoration: none; font-weight: 600; color: var(--ink-muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.tabs a[aria-current="page"] { color: var(--brand); border-bottom-color: var(--brand); }
+.search input { flex: 1; min-width: 220px; padding: .6rem .7rem; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.faq { border-top: 1px solid var(--line); padding: .7rem 0; }
+.faq:first-of-type { border-top: 0; }
+.faq summary { cursor: pointer; font-weight: 600; }
+.faq p { margin: .5rem 0 0; color: var(--ink-muted); }
+.contacts, .doclist { list-style: none; margin: 0; padding: 0; }
+.contacts li { display: grid; gap: .1rem; padding: .6rem 0; border-top: 1px solid var(--page); }
+.contacts li:first-child { border-top: 0; }
+.doclist li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .8rem 0; border-top: 1px solid var(--page); }
+.doclist li:first-child { border-top: 0; }
+.sev-critical { background: #f8e3e3; color: var(--error); }
+.sev-high { background: #fbefd9; color: #8a5410; }
+.sev-medium { background: #e3edf8; color: #285f99; }
+.sev-low { background: #ececea; color: #5d6064; }
+.sev-choices { display: grid; gap: .5rem; }
+.sev-choice { display: flex; gap: .6rem; align-items: flex-start; border: 1px solid var(--line); border-radius: 8px; padding: .6rem .75rem; cursor: pointer; font-weight: 400 !important; }
+.sev-choice input { margin-top: .3rem; width: auto !important; flex: none; }
+.sev-choice:has(input:checked) { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 6%, white); }
+.kv-tight { grid-template-columns: 110px 1fr; font-size: .92rem; }
+.actions { white-space: nowrap; text-align: right; }
+.actions form { margin-left: .25rem; }
+.vbars { display: flex; align-items: flex-end; gap: 6px; height: 160px; padding-top: .5rem; border-bottom: 1px solid var(--line); }
+.vbar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: .25rem; min-width: 0; }
+.vbar i { display: block; width: 100%; max-width: 44px; background: var(--brand); border-radius: 4px 4px 0 0; min-height: 0; }
+.vbar .num { font-size: .75rem; color: var(--ink-muted); }
+.vlabels { display: flex; gap: 6px; margin-top: .3rem; }
+.vlabels span { flex: 1; text-align: center; font-size: .72rem; color: var(--ink-muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hbars.wide .hbar { grid-template-columns: minmax(120px, 34%) 1fr 36px; }
+.hbar .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.target-line { position: relative; }
+.stage-row { display: grid; grid-template-columns: 150px 1fr 120px; gap: .75rem; align-items: center; padding: .45rem 0; border-top: 1px solid var(--page); }
+.stage-row:first-of-type { border-top: 0; }
+.stage-track { position: relative; height: 12px; background: var(--page); border-radius: 0 4px 4px 0; }
+.stage-track i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--brand); border-radius: 0 4px 4px 0; }
+.stage-track i.late { background: var(--warn); }
+.stage-track b { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); }
+.legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .8rem; color: var(--ink-muted); margin-top: .5rem; }
+.legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: .3rem; vertical-align: -1px; }
+@media print { .topbar, .footer, .chat-fab, .no-print { display: none !important; } .card { break-inside: avoid; } }
+h3 { font-size: 1.02rem; margin: 0 0 .25rem; }
+.section-h { margin: 1.75rem 0 .75rem; }

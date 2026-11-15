@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     "core",
     "ideas",
     "chat",
+    "support",
+    "reports",
 ]
 
 MIDDLEWARE = [
@@ -157,6 +159,7 @@ if not DEBUG:
 CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
 
 SITE_NAME = "Botlhami"
+SUPPORT_EMAIL = env("SUPPORT_EMAIL", default="saxumas@yahoo.com")
 SITE_URL = env("SITE_URL", default="http://127.0.0.1:8000")
 # Private: documents are served only through an access-checked view. On Azure, point this at
 # /home/data/media, which survives redeploys.

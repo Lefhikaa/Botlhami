@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}My support tickets{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>My support tickets</h1><p class="muted">Problems you've reported and where they stand.</p></div><a class="btn btn-primary" href="{% url 'support:new' %}">Report a problem</a></div>
+{% include "support/_helpnav.html" with active="tickets" %}
+<section class="card mt">
+{% if tickets %}<table class="table"><thead><tr><th>Ticket</th><th>Severity</th><th>Status</th><th>Raised</th><th>Target</th></tr></thead><tbody>
+{% for t in tickets %}<tr><td><a href="{% url 'support:ticket' t.pk %}"><strong>{{ t.subject }}</strong></a><div class="small muted">{{ t.reference }}</div></td><td><span class="pill sev-{{ t.level.severity }}">{{ t.level.label }}</span></td><td>{{ t.get_status_display }}</td><td>{{ t.created_at|date:"j M H:i" }}</td><td>{% include "support/_due.html" %}</td></tr>{% endfor %}
+</tbody></table>{% else %}<p class="muted">You haven't reported any problems. If something isn't working, <a href="{% url 'support:new' %}">let us know</a>.</p>{% endif %}
+</section>
+{% endblock %}

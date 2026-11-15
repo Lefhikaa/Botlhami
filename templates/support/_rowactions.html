@@ -1,0 +1,2 @@
+<a class="btn btn-sm" href="{% url 'support:manage_edit' kind obj.pk %}">Edit</a>
+<form method="post" action="{% url 'support:manage_delete' kind obj.pk %}" class="inline" data-confirm="Delete “{{ obj }}”? This can't be undone.">{% csrf_token %}<button class="btn btn-sm btn-bad">Delete</button></form>

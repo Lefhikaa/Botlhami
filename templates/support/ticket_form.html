@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}Report a problem{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Report a problem</h1><p class="muted">Tell us what went wrong. You'll get a reference number and updates by alert and email.</p></div></div>
+<form method="post" class="card narrow-wide" novalidate>{% csrf_token %}
+  {% include "_form_errors.html" %}
+  {% include "_field.html" with field=form.subject %}
+  {% include "_field.html" with field=form.area %}
+  <div class="field{% if form.level.errors %} has-error{% endif %}"><span class="label">{{ form.level.label|capfirst }} <span class="req">*</span></span>
+    <div class="sev-choices">{% for l in levels %}<label class="sev-choice"><input type="radio" name="level" value="{{ l.pk }}"{% if form.level.value|stringformat:"s" == l.pk|stringformat:"s" %} checked{% endif %} required>
+      <span><strong>{{ l.label }}</strong> <span class="small muted">{{ l.description }}</span><br><span class="small">Response within {{ l.response_label }} · fixed within {{ l.resolution_label }}</span></span></label>{% endfor %}</div>
+    {% for e in form.level.errors %}<small class="error">{{ e }}</small>{% endfor %}</div>
+  {% include "_field.html" with field=form.description %}
+  <div class="row end"><a class="btn" href="{% url 'support:tickets' %}">Cancel</a><button class="btn btn-primary">Submit ticket</button></div>
+</form>
+{% endblock %}

@@ -12,7 +12,10 @@ It takes ideas from submission through review, feedback and approval to award, w
 | Roles, permission checks, append-only audit trail, security headers, login lockout | Done |
 | Idea submission with mandatory-field checks, drafts and documents; screening and evaluator assignment; weighted scoring with blind review and conflict-of-interest checks; adjudication, revision rounds and awards; pipeline board; notifications and email alerts | Done |
 | Live chat with CEDA consultants: several agents and several chats each, 09:00–16:00 on working days, public holidays, busy and after-hours notices, offline messages answered by email, ratings and chat analytics | Done |
-| Admin content, FAQs, reports dashboard, support page | Planned |
+| Help centre: FAQs with search, regulatory authority contacts, downloadable application forms and required documents; administrators add, edit and delete all of it without code | Done |
+| Support desk: fault tickets with severity-based response and resolution targets, a published service-level page, a support queue that flags late tickets, internal notes | Done |
+| Reports: participation, outcomes and stage timelines against targets, evaluator workload, support performance, CSV export without applicant names | Done |
+| CEDA branding (after the 16 November briefing), email through Azure Communication Services, uptime monitoring | Planned |
 
 ## Run it locally
 
@@ -27,7 +30,7 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-To load demo accounts for every role, plus sample ideas:
+To load demo accounts for every role, plus sample ideas, documents and support tickets:
 
 ```bash
 python manage.py seed_demo --password "choose-a-demo-password"

@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}Application forms and documents{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Application forms and documents</h1><p class="muted">Download the forms and templates you need. Documents marked <span class="pill s-revision">Required</span> must be uploaded with your idea.</p></div></div>
+{% include "support/_helpnav.html" with active="docs" %}
+{% for label, items in groups %}
+<section class="card mt"><h2>{{ label }}{{ items|length|pluralize }}</h2>
+  <ul class="doclist">{% for r in items %}<li>
+    <div><strong>{{ r.title }}</strong> {% if r.mandatory %}<span class="pill s-revision">Required</span>{% endif %}
+      {% if r.description %}<div class="small muted">{{ r.description }}</div>{% endif %}
+      <div class="small muted">{{ r.original_name }} · {{ r.size|filesizeformat }} · updated {{ r.updated_at|date:"j M Y" }}</div></div>
+    <a class="btn btn-sm" href="{% url 'support:download' r.pk %}" download>⬇ Download</a>
+  </li>{% endfor %}</ul>
+</section>
+{% empty %}<section class="card mt"><p class="muted">No documents have been published yet.</p></section>{% endfor %}
+{% endblock %}

@@ -1,0 +1,1 @@
+<nav class="tabs" aria-label="Content sections">{% for key, s in sections.items %}<a href="{% url 'support:manage' key %}"{% if key == kind %} aria-current="page"{% endif %}>{{ s.title }}</a>{% endfor %}</nav>

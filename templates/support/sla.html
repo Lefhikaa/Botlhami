@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% block title %}Support and service levels{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Support and service levels</h1><p class="muted">How to get help, and how quickly we respond to faults.</p></div>
+{% if user.is_authenticated %}<a class="btn btn-primary" href="{% url 'support:new' %}">Report a problem</a>{% endif %}</div>
+{% include "support/_helpnav.html" with active="sla" %}
+<div class="kpis mt">
+  <div class="card kpi"><span class="muted small">Portal availability target</span><strong>99.5%</strong><span class="small muted">Monitored around the clock, every 5 minutes</span></div>
+  <div class="card kpi"><span class="muted small">Live chat</span><strong>09:00–16:00</strong><span class="small muted">Working days, except public holidays</span></div>
+  <div class="card kpi"><span class="muted small">Support tickets</span><strong>24/7</strong><span class="small muted">Raise one any time. Each gets a reference number</span></div>
+  <div class="card kpi"><span class="muted small">Planned maintenance</span><strong>Sat 20:00–23:00</strong><span class="small muted">Announced at least 48 hours ahead</span></div>
+</div>
+<section class="card mt"><h2>Fault turnaround times</h2>
+  <p class="muted small">The clock starts when you raise a ticket. <strong>Response</strong> is when a support person first replies. <strong>Resolution</strong> is when the fault is fixed or a workaround is in place.</p>
+  <table class="table"><thead><tr><th>Severity</th><th>Examples</th><th class="num">Response within</th><th class="num">Resolution within</th></tr></thead><tbody>
+  {% for l in levels %}<tr><td><span class="pill sev-{{ l.severity }}">{{ l.label }}</span></td><td>{{ l.description }}</td><td class="num">{{ l.response_label }}</td><td class="num">{{ l.resolution_label }}</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+<div class="grid2 mt">
+  <section class="card"><h2>How to report a fault</h2><ol class="small">
+    <li>Sign in and choose <strong>Report a problem</strong>, or go to Help → My support tickets.</li>
+    <li>Pick how serious it is, describe what happened and add any error message.</li>
+    <li>You get a reference number, an alert and an email for every update.</li>
+    <li>If the portal itself is down, email <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a> and quote the time it happened.</li>
+  </ol></section>
+  <section class="card"><h2>Escalation</h2><ol class="small">
+    <li>If a response is late, the ticket is flagged red in the support queue for the whole team.</li>
+    <li>Critical faults go to the on-call engineer straight away.</li>
+    <li>After a critical fault, we publish a short incident report within 5 working days.</li>
+  </ol></section>
+</div>
+{% endblock %}

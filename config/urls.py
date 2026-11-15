@@ -9,6 +9,8 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("ideas/", include("ideas.urls")),
     path("chat/", include("chat.urls")),
+    path("reports/", include("reports.urls")),
+    path("", include("support.urls")),
     path("", include("core.urls")),
 ]
 

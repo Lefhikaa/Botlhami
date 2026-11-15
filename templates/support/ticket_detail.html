@@ -1,0 +1,34 @@
+{% extends "base.html" %}{% block title %}{{ t.reference }}{% endblock %}
+{% block content %}
+<div class="page-head"><div><span class="tag">{{ t.reference }}</span><h1 class="mt-s">{{ t.subject }}</h1>
+<p class="muted">{{ t.get_area_display }} · raised {{ t.created_at|date:"j M Y, H:i" }}{% if staff_view %} by {{ t.raised_by }} ({{ t.raised_by.email }}){% endif %}</p></div>
+<a class="btn btn-sm" href="{% if staff_view %}{% url 'support:queue' %}{% else %}{% url 'support:tickets' %}{% endif %}">← Back</a></div>
+<div class="detail">
+  <div class="stack">
+    <section class="card"><h2>What happened</h2><p>{{ t.description|linebreaksbr }}</p></section>
+    <section class="card"><h2>Conversation</h2>
+      <div class="thread">{% for r in replies %}<div class="msg{% if r.author_id == user.pk %} mine{% endif %}{% if r.internal %} msg-warning{% endif %}"><p>{{ r.body|linebreaksbr }}</p><span class="small muted">{{ r.author.first_name|default:r.author.email }}{% if r.author.is_staff_role %} · support team{% endif %} · {{ r.created_at|date:"j M H:i" }}{% if r.internal %} · internal note{% endif %}</span></div>{% empty %}<p class="muted">No replies yet.</p>{% endfor %}</div>
+      {% if staff_view or t.status != "closed" %}
+      <form method="post" class="mt">{% csrf_token %}{% include "_form_errors.html" %}
+        {% include "_field.html" with field=form.body %}
+        {% if staff_view %}{% include "_field.html" with field=form.internal %}
+        <div class="grid2">{% include "_field.html" with field=form.status %}{% include "_field.html" with field=form.assigned_to %}</div>{% endif %}
+        <div class="row end"><button class="btn btn-primary">{% if staff_view %}Save{% else %}Send reply{% endif %}</button></div>
+      </form>{% else %}<p class="muted small mt">This ticket is closed. If the problem comes back, <a href="{% url 'support:new' %}">raise a new ticket</a>.</p>{% endif %}
+    </section>
+  </div>
+  <aside class="stack">
+    <section class="card"><h2>Status</h2>
+      <dl class="kv kv-tight">
+        <dt>Status</dt><dd>{{ t.get_status_display }}</dd>
+        <dt>Severity</dt><dd><span class="pill sev-{{ t.level.severity }}">{{ t.level.label }}</span></dd>
+        <dt>Assigned to</dt><dd>{{ t.assigned_to.first_name|default:"Not yet assigned" }}</dd>
+        <dt>Response due</dt><dd>{{ t.response_due|date:"j M H:i" }} {% if t.response_met %}<span class="ok">✓ met</span>{% elif t.response_met is False %}<span class="bad">missed</span>{% endif %}</dd>
+        <dt>Fix due</dt><dd>{{ t.resolution_due|date:"j M H:i" }} {% if t.resolution_met %}<span class="ok">✓ met</span>{% elif t.resolution_met is False %}<span class="bad">missed</span>{% endif %}</dd>
+        {% if t.resolved_at %}<dt>Resolved</dt><dd>{{ t.resolved_at|date:"j M H:i" }}</dd>{% endif %}
+      </dl>
+      <p class="small muted"><a href="{% url 'support:sla' %}">How these targets work</a></p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

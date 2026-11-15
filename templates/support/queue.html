@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}Support queue{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Support queue</h1><p class="muted">{{ counts.active }} open ticket{{ counts.active|pluralize }}{% if counts.overdue %} · <span class="bad">{{ counts.overdue }} past target</span>{% endif %}. Sorted by the next deadline.</p></div>
+<div class="row"><a class="btn btn-sm{% if show == 'active' %} btn-primary{% endif %}" href="?show=active">Open</a><a class="btn btn-sm{% if show == 'mine' %} btn-primary{% endif %}" href="?show=mine">Assigned to me</a><a class="btn btn-sm{% if show == 'all' %} btn-primary{% endif %}" href="?show=all">All</a></div></div>
+<section class="card">
+{% if tickets %}<table class="table"><thead><tr><th>Ticket</th><th>Severity</th><th>Raised by</th><th>Status</th><th>Assigned</th><th>Target</th></tr></thead><tbody>
+{% for t in tickets %}<tr><td><a href="{% url 'support:ticket' t.pk %}"><strong>{{ t.subject }}</strong></a><div class="small muted">{{ t.reference }} · {{ t.get_area_display }}</div></td><td><span class="pill sev-{{ t.level.severity }}">{{ t.level.label }}</span></td><td>{{ t.raised_by.first_name|default:t.raised_by.email }}</td><td>{{ t.get_status_display }}</td><td>{{ t.assigned_to.first_name|default:"—" }}</td><td>{% include "support/_due.html" %}</td></tr>{% endfor %}
+</tbody></table>{% else %}<p class="muted">No tickets here.</p>{% endif %}
+</section>
+{% endblock %}

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ SITE_NAME }}{% endblock %} · {{ SITE_NAME }}</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'js/confirm.js' %}" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -20,12 +21,15 @@
         {% if user.role == "adjudicator" or user.role == "admin" %}<a href="{% url 'ideas:adjudication' %}">Adjudication</a>{% endif %}
         {% if user.role == "admin" %}<a href="{% url 'ideas:screening' %}">Screening</a>{% endif %}
         {% if user.role == "admin" or user.role == "adjudicator" or user.role == "observer" %}<a href="{% url 'ideas:pipeline' %}">Pipeline</a>{% endif %}
-        {% if user.role == "consultant" or user.role == "admin" %}<a href="{% url 'chat:console' %}">Chat console</a>{% endif %}
-        {% if user.role == "admin" %}<a href="{% url 'admin:index' %}">Admin</a>{% endif %}
+        {% if user.role == "admin" or user.role == "adjudicator" or user.role == "observer" %}<a href="{% url 'reports:dashboard' %}">Reports</a>{% endif %}
+        {% if user.role == "consultant" or user.role == "admin" %}<a href="{% url 'chat:console' %}">Chat</a><a href="{% url 'support:queue' %}">Support</a>{% endif %}
+        {% if user.role == "admin" %}<a href="{% url 'support:manage_home' %}">Content</a><a href="{% url 'admin:index' %}">Admin</a>{% endif %}
+        {% if user.role == "submitter" or user.role == "evaluator" %}<a href="{% url 'support:help' %}">Help</a>{% endif %}
         <a href="{% url 'ideas:notifications' %}" aria-label="Notifications">🔔{% if unread_count %}<span class="badge">{{ unread_count }}</span>{% endif %}</a>
         <a href="{% url 'accounts:profile' %}">{{ user.first_name|default:user.email }}</a>
         <form method="post" action="{% url 'accounts:logout' %}" class="inline">{% csrf_token %}<button class="linklike">Sign out</button></form>
       {% else %}
+        <a href="{% url 'support:help' %}">Help</a>
         <a href="{% url 'accounts:login' %}">Sign in</a>
         <a class="btn btn-primary btn-sm" href="{% url 'accounts:register' %}">Register</a>
       {% endif %}
@@ -42,6 +46,7 @@
   {% if not user.is_authenticated or user.role == "submitter" %}{% if request.resolver_match.app_name != "chat" %}<a class="btn btn-primary chat-fab" href="{% url 'chat:client' %}">💬 Chat with CEDA</a>{% endif %}{% endif %}
   <footer class="footer">
     <span>&copy; {% now "Y" %} {{ SITE_NAME }}</span>
+    <span><a href="{% url 'support:help' %}">Help centre</a> · <a href="{% url 'support:documents' %}">Forms and documents</a> · <a href="{% url 'support:sla' %}">Service levels</a></span>
     <span>Personal data is handled under Botswana's Data Protection Act, 2024.</span>
   </footer>
 </body>

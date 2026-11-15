@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}{% if obj %}Edit{% else %}Add{% endif %} {{ conf.noun }}{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>{% if obj %}Edit {{ conf.noun }}{% else %}Add {{ conf.noun }}{% endif %}</h1><p class="muted">{{ conf.title }}</p></div></div>
+<form method="post" enctype="multipart/form-data" class="card narrow-wide" novalidate>{% csrf_token %}
+  {% include "_form_errors.html" %}
+  {% if obj.file %}<p class="small">Current file: <a href="{% url 'support:download' obj.pk %}">{{ obj.original_name }}</a> ({{ obj.size|filesizeformat }})</p>{% endif %}
+  {% for field in form %}{% include "_field.html" %}{% endfor %}
+  <div class="row end"><a class="btn" href="{% url 'support:manage' kind %}">Cancel</a><button class="btn btn-primary">Save</button></div>
+</form>
+{% endblock %}

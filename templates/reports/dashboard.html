@@ -1,0 +1,69 @@
+{% extends "base.html" %}{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Reports</h1><p class="muted">Participation, outcomes and timelines · {{ r.period_label }} · generated {{ generated|date:"j M Y, H:i" }}</p></div>
+<div class="row no-print">{% for d, label in r.periods.items %}<a class="btn btn-sm{% if r.days == d %} btn-primary{% endif %}" href="?days={{ d }}">{{ label }}</a>{% endfor %}
+<a class="btn btn-sm" href="{% url 'reports:export' %}?days={{ r.days }}">⬇ Export CSV</a></div></div>
+
+<div class="kpis">
+  <div class="card kpi"><span class="muted small">Ideas submitted</span><strong>{{ r.kpi.submitted }}</strong><span class="small muted">from {{ r.kpi.submitting_applicants }} applicant{{ r.kpi.submitting_applicants|pluralize }}</span></div>
+  <div class="card kpi"><span class="muted small">New applicants registered</span><strong>{{ r.kpi.new_applicants }}</strong><span class="small muted">{{ r.kpi.applicants_total }} in total</span></div>
+  <div class="card kpi"><span class="muted small">Approval rate</span><strong>{% if r.kpi.approval_rate is not None %}{{ r.kpi.approval_rate }}%{% else %}—{% endif %}</strong><span class="small muted">of {{ r.kpi.decided }} decided idea{{ r.kpi.decided|pluralize }}</span></div>
+  <div class="card kpi"><span class="muted small">Awards granted</span><strong>{{ r.kpi.awards }}</strong><span class="small muted">{% if r.kpi.award_value %}P{{ r.kpi.award_value|floatformat:"0g" }} in value{% else %}No cash value recorded{% endif %}</span></div>
+</div>
+
+<h2 class="section-h">Participation</h2>
+<div class="grid2">
+  <section class="card"><h3>Ideas submitted by month</h3><p class="small muted">Last 12 months, all periods</p>
+    <div class="vbars" role="img" aria-label="Ideas submitted per month over the last 12 months">{% for m in r.months %}<div class="vbar" title="{{ m.label }}: {{ m.n }} idea{{ m.n|pluralize }}"><span class="num">{% if m.n %}{{ m.n }}{% endif %}</span><i style="height: {{ m.h }}%"></i></div>{% endfor %}</div>
+    <div class="vlabels" aria-hidden="true">{% for m in r.months %}<span>{{ m.label|slice:":3" }}</span>{% endfor %}</div>
+  </section>
+  <section class="card"><h3>By sector</h3>
+    {% if r.by_sector %}<div class="hbars wide">{% for s in r.by_sector %}<div class="hbar" title="{{ s.label }}: {{ s.n }}"><span class="small lbl">{{ s.label }}</span><span class="track"><i style="width: {{ s.w }}%"></i></span><span class="num small">{{ s.n }}</span></div>{% endfor %}</div>{% else %}<p class="muted">No submissions in this period.</p>{% endif %}
+  </section>
+  <section class="card"><h3>By location</h3>
+    {% if r.by_location %}<div class="hbars wide">{% for s in r.by_location %}<div class="hbar" title="{{ s.label }}: {{ s.n }}"><span class="small lbl">{{ s.label }}</span><span class="track"><i style="width: {{ s.w }}%"></i></span><span class="num small">{{ s.n }}</span></div>{% endfor %}</div>{% else %}<p class="muted">No submissions in this period.</p>{% endif %}
+  </section>
+  <section class="card"><h3>Where ideas are now</h3>
+    <div class="hbars wide">{% for s in r.by_status %}<div class="hbar" title="{{ s.label }}: {{ s.n }}"><span class="small lbl">{{ s.label }}</span><span class="track"><i style="width: {{ s.w }}%"></i></span><span class="num small">{{ s.n }}</span></div>{% endfor %}</div>
+  </section>
+</div>
+
+<h2 class="section-h">Outcomes and timelines</h2>
+<div class="kpis">
+  <div class="card kpi"><span class="muted small">Average time to decision</span><strong>{% if r.kpi.avg_to_decision is not None %}{{ r.kpi.avg_to_decision }} days{% else %}—{% endif %}</strong><span class="small muted">From submission to approval or rejection</span></div>
+  <div class="card kpi"><span class="muted small">Average combined score</span><strong>{% if r.kpi.avg_score is not None %}{{ r.kpi.avg_score }}{% else %}—{% endif %}</strong><span class="small muted">Decided ideas, out of 100</span></div>
+  <div class="card kpi"><span class="muted small">Sent back for revision</span><strong>{{ r.kpi.revised }}</strong><span class="small muted">Ideas the panel asked to improve</span></div>
+  <div class="card kpi"><span class="muted small">Past target now</span><strong{% if r.overdue %} class="bad"{% endif %}>{{ r.overdue|length }}</strong><span class="small muted">Ideas waiting longer than the target</span></div>
+</div>
+<div class="grid2 mt">
+  <section class="card"><h3>Average days per stage</h3>
+    {% for s in r.stages %}<div class="stage-row" title="{{ s.label }}: {% if s.avg is not None %}{{ s.avg }} days on average over {{ s.n }} idea{{ s.n|pluralize }}{% else %}no completed stages yet{% endif %}{% if s.target %}; target {{ s.target }} days{% endif %}">
+      <span class="small"><strong>{{ s.label }}</strong></span>
+      <span class="stage-track"><i{% if s.late %} class="late"{% endif %} style="width: {{ s.bar }}%"></i>{% if s.mark is not None %}<b style="left: {{ s.mark }}%"></b>{% endif %}</span>
+      <span class="small num">{% if s.avg is not None %}{{ s.avg }} d{% else %}—{% endif %}{% if s.target %} <span class="muted">/ {{ s.target }} d</span>{% endif %}</span>
+    </div>{% endfor %}
+    <div class="legend"><span><span class="sw" style="background: var(--brand)"></span>Within target</span><span><span class="sw" style="background: var(--warn)"></span>Over target</span><span><span class="sw" style="background: var(--ink); width: 2px"></span>Target</span></div>
+  </section>
+  <section class="card"><h3>Waiting past target</h3>
+    {% if r.overdue %}<table class="table"><thead><tr><th>Idea</th><th>Stage</th><th class="num">Days</th></tr></thead><tbody>
+    {% for i in r.overdue %}<tr><td><a href="{% url 'ideas:detail' i.pk %}">{{ i.title }}</a><div class="small muted">{{ i.reference }}</div></td><td>{{ i.get_status_display }}</td><td class="num bad">{{ i.days_in_status }}</td></tr>{% endfor %}
+    </tbody></table>{% else %}<p class="ok">✓ Nothing is waiting past its target.</p>{% endif %}
+  </section>
+  <section class="card"><h3>Evaluator workload</h3>
+    {% if r.workload %}<table class="table"><thead><tr><th>Evaluator</th><th class="num">To score</th><th class="num">Late</th><th class="num">Scored</th><th class="num">Recused</th></tr></thead><tbody>
+    {% for w in r.workload %}<tr><td>{{ w.name }}</td><td class="num">{{ w.pending }}</td><td class="num{% if w.late %} bad{% endif %}">{{ w.late }}</td><td class="num">{{ w.done }}</td><td class="num">{{ w.recused }}</td></tr>{% endfor %}
+    </tbody></table>{% else %}<p class="muted">No evaluators yet.</p>{% endif %}
+  </section>
+  <section class="card"><h3>Support desk</h3>
+    <table class="table"><tbody>
+      <tr><td>Tickets raised</td><td class="num">{{ r.support.total }}</td></tr>
+      <tr><td>Open now</td><td class="num">{{ r.support.open }}</td></tr>
+      <tr><td>First response within target</td><td class="num">{% if r.support.response_pct is not None %}{{ r.support.response_pct }}%{% else %}—{% endif %}</td></tr>
+      <tr><td>Fixed within target</td><td class="num">{% if r.support.resolution_pct is not None %}{{ r.support.resolution_pct }}%{% else %}—{% endif %}</td></tr>
+      {% for l in r.support.by_level %}<tr><td class="muted">{{ l.level__label }}</td><td class="num muted">{{ l.n }}</td></tr>{% endfor %}
+    </tbody></table>
+    {% if user.role == "admin" %}<p class="small"><a href="{% url 'support:queue' %}">Open the support queue</a> · <a href="{% url 'chat:reports' %}">Live chat reports</a></p>{% endif %}
+  </section>
+</div>
+<p class="small muted mt no-print">The CSV export has one row per idea with no applicant names, so it can be shared for analysis in Excel or Power BI. Use your browser's Print option to save this page as a PDF.</p>
+{% endblock %}

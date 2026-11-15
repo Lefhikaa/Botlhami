@@ -1,0 +1,6 @@
+<nav class="tabs" aria-label="Help centre">
+  <a href="{% url 'support:help' %}"{% if active == "faq" %} aria-current="page"{% endif %}>FAQs and contacts</a>
+  <a href="{% url 'support:documents' %}"{% if active == "docs" %} aria-current="page"{% endif %}>Application forms and documents</a>
+  <a href="{% url 'support:sla' %}"{% if active == "sla" %} aria-current="page"{% endif %}>Support and service levels</a>
+  {% if user.is_authenticated %}<a href="{% url 'support:tickets' %}"{% if active == "tickets" %} aria-current="page"{% endif %}>My support tickets</a>{% endif %}
+</nav>
