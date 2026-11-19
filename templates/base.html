@@ -4,16 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ SITE_NAME }}{% endblock %} · {{ SITE_NAME }}</title>
+  <link rel="icon" href="{% static 'img/botlhami-mark.svg' %}" type="image/svg+xml">
+  <meta name="theme-color" content="#134e5a">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="{% static 'js/confirm.js' %}" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
   <header class="topbar">
-    <a class="brand" href="{% url 'core:home' %}" aria-label="{{ SITE_NAME }} home">
-      <span class="brand-mark" aria-hidden="true">B</span>
-      <span class="brand-name">{{ SITE_NAME }}</span>
-    </a>
+    <div class="topbar-left">
+      <a class="brand" href="{% url 'core:home' %}" aria-label="{{ SITE_NAME }} home">
+        <img class="brand-mark" src="{% static 'img/botlhami-mark.svg' %}" alt="" width="34" height="34">
+        <span class="brand-name">{{ SITE_NAME }}</span>
+      </a>
+      <span class="partner"><span>in partnership<br>with</span><img src="{% static 'img/ceda-logo.png' %}" alt="CEDA" width="56" height="30"></span>
+    </div>
     <nav class="topnav" aria-label="Account">
       {% if user.is_authenticated %}
         {% if user.role == "submitter" %}<a href="{% url 'ideas:mine' %}">My ideas</a><a href="{% url 'ideas:new' %}">Submit an idea</a>{% endif %}
@@ -35,6 +40,7 @@
       {% endif %}
     </nav>
   </header>
+  <div class="weave-band" aria-hidden="true"></div>
   <main id="main" class="{% block main_class %}container{% endblock %}">
     {% if messages %}
       <div class="messages" role="status">
@@ -45,7 +51,7 @@
   </main>
   {% if not user.is_authenticated or user.role == "submitter" %}{% if request.resolver_match.app_name != "chat" %}<a class="btn btn-primary chat-fab" href="{% url 'chat:client' %}">💬 Chat with CEDA</a>{% endif %}{% endif %}
   <footer class="footer">
-    <span>&copy; {% now "Y" %} {{ SITE_NAME }}</span>
+    <span class="footer-partner">&copy; {% now "Y" %} {{ SITE_NAME }}, in partnership with <img src="{% static 'img/ceda-logo-tagline.png' %}" alt="CEDA: Finance, Develop, Sustain" width="56" height="34"></span>
     <span><a href="{% url 'support:help' %}">Help centre</a> · <a href="{% url 'support:documents' %}">Forms and documents</a> · <a href="{% url 'support:sla' %}">Service levels</a></span>
     <span>Personal data is handled under Botswana's Data Protection Act, 2024.</span>
   </footer>

@@ -1,11 +1,34 @@
-{% extends "base.html" %}{% block title %}Welcome{% endblock %}
+{% extends "base.html" %}{% load static %}{% block title %}Welcome{% endblock %}
 {% block content %}
 <section class="hero">
-  <h1>Submit, evaluate and recognise Botswana's best ideas</h1>
-  <p>{{ SITE_NAME }} takes every idea from submission through review, feedback and approval to award, with live tracking at every step.</p>
-  <div class="row">
-    <a class="btn btn-primary" href="{% url 'accounts:register' %}">Create an account</a>
-    <a class="btn" href="{% url 'accounts:login' %}">Sign in</a>
+  <div class="hero-copy">
+    <h1>Your idea, from first draft to award</h1>
+    <p>{{ SITE_NAME }} is where Botswana's innovators bring ideas to CEDA. Independent experts review every idea, you get feedback at each step, and you can always see where yours stands.</p>
+    <div class="row">
+      {% if user.is_authenticated %}<a class="btn btn-primary" href="{% url 'core:dashboard' %}">Go to my dashboard</a>
+      {% else %}<a class="btn btn-primary" href="{% url 'accounts:register' %}">Submit an idea</a>
+      <a class="btn" href="{% url 'accounts:login' %}">Sign in</a>{% endif %}
+    </div>
+  </div>
+  <div class="hero-weave">
+    <div class="hero-partner">
+      <img src="{% static 'img/ceda-logo-tagline.png' %}" alt="CEDA: Finance, Develop, Sustain" width="75" height="46">
+      <span>The innovation stream for CEDA's <strong>#KaeKapaKae</strong> platform.</span>
+    </div>
   </div>
 </section>
+
+<ol class="journey" aria-label="How it works">
+  <li><strong>Submission</strong><span>Describe your idea and upload your documents. Save a draft whenever you like.</span></li>
+  <li><strong>Review</strong><span>Two independent evaluators score it, without seeing your name.</span></li>
+  <li><strong>Feedback</strong><span>Read their comments, answer questions, or improve it and resubmit.</span></li>
+  <li><strong>Approval</strong><span>CEDA's adjudication panel makes the final decision.</span></li>
+  <li><strong>Award</strong><span>Funding referral, incubation, recognition or a pilot with CEDA.</span></li>
+</ol>
+
+<div class="home-help">
+  <a href="{% url 'support:documents' %}"><strong>Forms and documents</strong><span>The application form, templates and what to upload.</span></a>
+  <a href="{% url 'support:help' %}"><strong>Questions and contacts</strong><span>Answers to common questions, and which regulator to call.</span></a>
+  <a href="{% url 'chat:client' %}"><strong>Talk to CEDA</strong><span>Live chat from 09:00 to 16:00 on working days.</span></a>
+</div>
 {% endblock %}
