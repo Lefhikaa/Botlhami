@@ -112,7 +112,7 @@ Until this step is done, verification codes and alerts are written to **Log stre
 
 ## 8. Availability monitoring (5 minutes, recommended)
 
-On the web app, go to **Monitoring → Application Insights → Turn on**. Then, in Application Insights, go to **Availability → Add standard test**. Use the URL `https://botlhami-saxum.azurewebsites.net/health/` with a frequency of 5 minutes. This gives evidence for the 24/7 criterion.
+On the web app, go to **Monitoring → Application Insights → Turn on**. Then, in Application Insights, go to **Availability → Add standard test**. Use the URL `https://botlhami-saxum-dcbngscjene6gqef.southafricanorth-01.azurewebsites.net/health/ (your app's own address from Overview → Default domain)` with a frequency of 5 minutes. This gives evidence for the 24/7 criterion.
 
 ---
 
