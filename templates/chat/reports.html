@@ -23,5 +23,16 @@
       <tr><td>Never answered</td><td class="num">{{ a.unanswered }}</td></tr>
       {% for t, n in a.topics %}<tr><td>Topic: {{ t }}</td><td class="num">{{ n }}</td></tr>{% endfor %}
     </tbody></table></section>
+  <section class="card"><h2>Botlhami Assistant</h2>
+    <table class="table"><tbody>
+      <tr><td>Questions asked</td><td class="num">{{ bot.total }}</td></tr>
+      <tr><td>Answered from help content</td><td class="num">{{ bot.answered }}</td></tr>
+      <tr><td>Marked helpful</td><td class="num">{{ bot.helpful }}</td></tr>
+      <tr><td>Marked not helpful</td><td class="num">{{ bot.not_helpful }}</td></tr>
+    </tbody></table>
+    <h3 class="mt">Questions to add to the FAQs</h3>
+    {% if bot.gaps %}<table class="table"><tbody>{% for g in bot.gaps %}<tr><td>{{ g.question }}</td><td class="num">{{ g.n }}</td></tr>{% endfor %}</tbody></table>
+    <p class="small muted">Questions the assistant couldn't answer, or answered unhelpfully.{% if user.role == "admin" %} <a href="{% url 'support:manage_new' 'faqs' %}">Add an FAQ</a>.{% endif %}</p>
+    {% else %}<p class="muted">No gaps yet.</p>{% endif %}</section>
 </div>
 {% endblock %}

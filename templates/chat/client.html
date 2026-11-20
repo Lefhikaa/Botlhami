@@ -1,6 +1,23 @@
 {% extends "base.html" %}{% load static %}{% block title %}Chat with CEDA{% endblock %}
 {% block content %}
-<section class="card narrow chat-card">
+{% if not conv %}
+<section class="card narrow assistant" id="assistant" data-ask="{% url 'chat:ask' %}" data-feedback="{% url 'chat:ask_feedback' 0 %}">
+  <div class="assistant-head"><img src="{% static 'img/botlhami-mark.svg' %}" alt="" width="36" height="36">
+    <div><h1>Botlhami Assistant</h1><p class="small muted">Instant answers from our help centre, any time. Automated: for anything else, a consultant can help below.</p></div></div>
+  <div class="assistant-log" id="assistant-log" aria-live="polite">
+    <div class="bubble theirs"><span class="text">Dumela! Ask me about submitting an idea, documents, how ideas are scored, your Omang, or getting help.</span></div>
+  </div>
+  <div class="chips assistant-chips" id="assistant-chips">
+    <button type="button" class="chip">How do I submit an idea?</button>
+    <button type="button" class="chip">Which documents do I need?</button>
+    <button type="button" class="chip">How is my idea scored?</button>
+    <button type="button" class="chip">Why do you need my Omang?</button>
+  </div>
+  <form id="assistant-form" class="chat-input"><label class="sr" for="assistant-q">Your question</label>
+    <input id="assistant-q" maxlength="500" autocomplete="off" placeholder="Type a question…"><button class="btn btn-primary">Ask</button></form>
+</section>
+{% endif %}
+<section class="card narrow chat-card" id="human">
   <h1>Chat with a CEDA consultant</h1>
   <p class="muted small">Available from 09:00 to 16:00, Monday to Friday, except public holidays.</p>
   {% if conv %}
@@ -22,4 +39,5 @@
 </section>
 <meta name="csrf-token" content="{{ csrf_token }}">
 <script src="{% static 'js/chat.js' %}" defer></script>
+<script src="{% static 'js/assistant.js' %}" defer></script>
 {% endblock %}

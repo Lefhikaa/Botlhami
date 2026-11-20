@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django import forms
+from django.db.models import Count, Q
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
@@ -10,8 +13,9 @@ from accounts.models import Role
 from core.permissions import role_required
 from core.throttle import hit
 
+from . import assistant
 from . import services as svc
-from .models import AgentPresence, Conversation
+from .models import AgentPresence, AssistantQuery, Conversation
 
 TOPICS = ["Submitting an idea", "Status of my submission", "Technical problem", "CEDA financing", "Something else"]
 
@@ -184,4 +188,35 @@ def reports(request):
     days = days if days in (7, 30, 90) else 30
     data = svc.analytics(days)
     peak = max([n for _, n in data["by_hour"]] + [1])
-    return render(request, "chat/reports.html", {"a": data, "peak": peak, "peak_day": max([n for _, n in data["by_day"]] + [1])})
+    since = timezone.now() - timedelta(days=days)
+    asked = AssistantQuery.objects.filter(created_at__gte=since)
+    bot = {
+        "total": asked.count(), "answered": asked.filter(answered=True).count(),
+        "helpful": asked.filter(helpful=True).count(), "not_helpful": asked.filter(helpful=False).count(),
+        "gaps": list(asked.filter(Q(answered=False) | Q(helpful=False)).values("question").annotate(n=Count("id")).order_by("-n", "question")[:10]),
+    }
+    return render(request, "chat/reports.html", {"a": data, "bot": bot, "peak": peak, "peak_day": max([n for _, n in data["by_day"]] + [1])})
+
+
+@require_POST
+def ask(request):
+    """Botlhami Assistant: answer a question from the help content. Open to guests too."""
+    key = f"assistant:{request.session.session_key or request.META.get('REMOTE_ADDR')}"
+    if hit(key, 40, 600):
+        return JsonResponse({"answered": False, "text": "You've asked a lot of questions in a short time. Please wait a few minutes, or start a chat with a consultant."})
+    q = request.POST.get("q", "").strip()
+    if not q:
+        return JsonResponse({"answered": False, "text": "Type a question first."})
+    result = assistant.answer(q)
+    rec = AssistantQuery.objects.create(question=q[:500], matched=result.get("title", "")[:255], answered=result["answered"])
+    result["id"] = rec.pk
+    return JsonResponse(result)
+
+
+@require_POST
+def ask_feedback(request, pk):
+    q = get_object_or_404(AssistantQuery, pk=pk)
+    if q.helpful is None:
+        q.helpful = request.POST.get("helpful") == "yes"
+        q.save(update_fields=["helpful"])
+    return JsonResponse({"ok": True})

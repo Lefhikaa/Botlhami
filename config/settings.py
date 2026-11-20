@@ -162,6 +162,10 @@ SITE_NAME = "Botlhami"
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", default="saxumas@yahoo.com")
 # Key for the Omang hash. Set it once and never change it, or existing hashes stop matching.
 OMANG_PEPPER = env("OMANG_PEPPER", default="")
+# Optional: lets Botlhami Assistant phrase answers with Azure OpenAI. Without these it answers from search alone.
+AZURE_OPENAI_ENDPOINT = env("AZURE_OPENAI_ENDPOINT", default="")
+AZURE_OPENAI_KEY = env("AZURE_OPENAI_KEY", default="")
+AZURE_OPENAI_DEPLOYMENT = env("AZURE_OPENAI_DEPLOYMENT", default="")
 SITE_URL = env("SITE_URL", default="http://127.0.0.1:8000")
 # Private: documents are served only through an access-checked view. On Azure, point this at
 # /home/data/media, which survives redeploys.

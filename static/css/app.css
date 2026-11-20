@@ -497,3 +497,113 @@ main.home { flex: 1; width: 100%; }
 @media (max-width: 700px) { .dev-hero { grid-template-columns: 1fr; } }
 .idbox { border: 1px solid var(--line); border-radius: var(--radius); padding: .8rem 1rem .2rem; margin: .4rem 0 1rem; }
 .idbox legend { font-weight: 700; padding: 0 .3rem; }
+
+/* --- Botlhami Assistant --- */
+.assistant { border-top: 3px solid var(--sorghum); margin-bottom: 1rem; }
+.assistant-head { display: flex; gap: .8rem; align-items: center; }
+.assistant-head h1 { font-size: 1.3rem; margin: 0; }
+.assistant-head p { margin: .1rem 0 0; }
+.assistant-log { max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: .5rem; margin: .9rem 0 .6rem; padding: .2rem; }
+.assistant-log .bubble { max-width: 88%; }
+.assistant-log .bubble .chips { margin-top: .5rem; align-items: center; }
+.assistant-log .typing .text { letter-spacing: .2em; animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: .3; } }
+.assistant-chips { margin-bottom: .6rem; }
+button.chip { border: 1px solid var(--line); background: var(--surface); cursor: pointer; font: inherit; font-size: .82rem; color: var(--brand); }
+button.chip:hover { border-color: var(--brand); }
+.assistant .chat-input input { flex: 1; padding: .6rem .7rem; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.assistant-feedback { margin-top: .4rem; }
+
+/* --- Theme toggle --- */
+.theme-toggle { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; width: 2.1rem; height: 2.1rem; display: inline-grid; place-items: center; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0; }
+.theme-toggle:hover { border-color: var(--brand-ink); }
+.theme-toggle[hidden] { display: none; }
+:root { --brand-ink: var(--brand); --field: #fff; }
+
+/* --- Dark mode ---
+   Its own steps, not an inversion: a deep Okavango night for the page, a
+   lighter teal for text and links, and the CEDA sun colours kept as they are.
+   Fills that carry white text keep a teal dark enough for contrast. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --brand: #1b6a79;
+  --brand-ink: #7fcad6;
+  --brand-deep: #0b2a31;
+  --ink: #e4eaec;
+  --ink-muted: #9fb0b7;
+  --line: #2c3d43;
+  --surface: #16242a;
+  --page: #0e181c;
+  --field: #0f1d22;
+  --ok: #5cc28f;
+  --warn: #e9b25a;
+  --error: #f08a84;
+}
+html[data-theme="dark"] a,
+html[data-theme="dark"] .linklike,
+html[data-theme="dark"] button.chip,
+html[data-theme="dark"] .pw-toggle,
+html[data-theme="dark"] .ms-edit summary,
+html[data-theme="dark"] .home-help strong,
+html[data-theme="dark"] .people h3,
+html[data-theme="dark"] .stepper li.current,
+html[data-theme="dark"] .tabs a[aria-current="page"],
+html[data-theme="dark"] .verdict-score strong,
+html[data-theme="dark"] .home-stats-inner strong,
+html[data-theme="dark"] .plan-meter strong,
+html[data-theme="dark"] .dev-score strong { color: var(--brand-ink); }
+html[data-theme="dark"] .btn-primary,
+html[data-theme="dark"] .bubble.mine,
+html[data-theme="dark"] .home-hero a,
+html[data-theme="dark"] .hero a.btn,
+html[data-theme="dark"] .home-signin a { color: #fff; }
+html[data-theme="dark"] .card.accent,
+html[data-theme="dark"] .mini:hover, html[data-theme="dark"] .chat-item.active, html[data-theme="dark"] .chat-item:hover,
+html[data-theme="dark"] .home-help a:hover, html[data-theme="dark"] button.chip:hover { border-color: var(--brand-ink); }
+html[data-theme="dark"] .field input:not([type=checkbox]), html[data-theme="dark"] .field select, html[data-theme="dark"] .field textarea,
+html[data-theme="dark"] .chat-input textarea, html[data-theme="dark"] .chat-input input { background: var(--field); color: var(--ink); }
+html[data-theme="dark"] .field input:focus, html[data-theme="dark"] .field select:focus, html[data-theme="dark"] .field textarea:focus { border-color: var(--brand-ink); }
+html[data-theme="dark"] .scale label:has(input:checked),
+html[data-theme="dark"] .sev-choice:has(input:checked) { background: color-mix(in srgb, var(--brand-ink) 14%, var(--surface)); border-color: var(--brand-ink); color: var(--ink); }
+html[data-theme="dark"] .ms-in_progress .ms-dot { background: color-mix(in srgb, var(--brand-ink) 30%, var(--surface)); border-color: var(--brand-ink); }
+html[data-theme="dark"] .col { background: #132026; }
+
+/* Tinted pills, chips and notices: same meaning, night-time steps. */
+html[data-theme="dark"] :is(.s-draft, .sev-low, .v-waiting, .ms-pill-planned) { background: #263238; color: #c3ccd1; }
+html[data-theme="dark"] :is(.s-submitted, .sev-medium, .ms-pill-in_progress) { background: #182c40; color: #9cc3ee; }
+html[data-theme="dark"] .s-in_review { background: #282340; color: #c4b4f0; }
+html[data-theme="dark"] :is(.s-revision, .s-adjudication, .sev-high, .v-further, .chip-warn) { background: #3a2b12; color: #f0c477; }
+html[data-theme="dark"] :is(.s-approved, .v-approve, .chip-ok, .ms-pill-done) { background: #14322a; color: #7fd3a6; }
+html[data-theme="dark"] :is(.s-rejected, .sev-critical, .v-decline, .chip-bad, .ms-pill-at_risk) { background: #3d1c1d; color: #f39b95; }
+html[data-theme="dark"] .ms-at_risk .ms-dot, html[data-theme="dark"] .ms-overdue .ms-dot { background: #3d1c1d; }
+html[data-theme="dark"] :is(.s-awarded, .btn-ok, .stepper li.done .dot) { color: #0c1f17; }
+html[data-theme="dark"] .stepper li.stopped .dot { color: #2a0f0e; }
+html[data-theme="dark"] .warn-text { color: #f0c477; }
+html[data-theme="dark"] .msg-success { background: #13291f; border-color: #24533c; }
+html[data-theme="dark"] .msg-info { background: #142433; border-color: #284660; }
+html[data-theme="dark"] .msg-warning, html[data-theme="dark"] .card.warn { background: #2c2210; border-color: #5c4519; }
+html[data-theme="dark"] .msg-error { background: #2f1717; border-color: #5e2b2a; }
+html[data-theme="dark"] .ok-card { border-color: #24533c; }
+html[data-theme="dark"] .btn-warn { border-color: #5c4519; }
+html[data-theme="dark"] .btn-bad { border-color: #5e2b2a; }
+
+/* Charts: gridlines and the average line follow the theme. */
+html[data-theme="dark"] .radar [stroke="#dde2e6"] { stroke: var(--line); }
+html[data-theme="dark"] .radar circle { stroke: var(--surface); }
+html[data-theme="dark"] .radar [stroke="#1c2329"] { stroke: #e4eaec; }
+html[data-theme="dark"] .radar [fill="#1c2329"] { fill: #e4eaec; }
+html[data-theme="dark"] .chart-legend .sw[style*="1c2329"] { border-top-color: #e4eaec; }
+
+/* The CEDA logo has dark lettering, so it sits on a light tile at night. */
+html[data-theme="dark"] img.ceda-logo { background: #f4f6f6; border-radius: 6px; padding: 2px 5px; box-sizing: content-box; }
+/* Series colours step to their validated dark-surface values. */
+html[data-theme="dark"] .radar [stroke="#2a78d6"] { stroke: #3987e5; } html[data-theme="dark"] .radar [fill="#2a78d6"] { fill: #3987e5; } html[data-theme="dark"] .sw[style*="2a78d6"] { border-top-color: #3987e5; }
+html[data-theme="dark"] .radar [stroke="#eb6834"] { stroke: #d95926; } html[data-theme="dark"] .radar [fill="#eb6834"] { fill: #d95926; } html[data-theme="dark"] .sw[style*="eb6834"] { border-top-color: #d95926; }
+html[data-theme="dark"] .radar [stroke="#1baf7a"] { stroke: #199e70; } html[data-theme="dark"] .radar [fill="#1baf7a"] { fill: #199e70; } html[data-theme="dark"] .sw[style*="1baf7a"] { border-top-color: #199e70; }
+html[data-theme="dark"] .radar [stroke="#eda100"] { stroke: #c98500; } html[data-theme="dark"] .radar [fill="#eda100"] { fill: #c98500; } html[data-theme="dark"] .sw[style*="eda100"] { border-top-color: #c98500; }
+html[data-theme="dark"] .radar [stroke="#e87ba4"] { stroke: #d55181; } html[data-theme="dark"] .radar [fill="#e87ba4"] { fill: #d55181; } html[data-theme="dark"] .sw[style*="e87ba4"] { border-top-color: #d55181; }
+html[data-theme="dark"] :is(.home-hero, .hero) { background: #134e5a; }
+.topbar-left { flex: none; }
+.topnav { gap: .65rem; justify-content: flex-end; }
+@media (min-width: 901px) { .topbar { gap: .75rem; } .theme-toggle { width: 1.9rem; height: 1.9rem; font-size: .9rem; } }
+html[data-theme="dark"] :is(select, textarea, input:not([type=checkbox]):not([type=radio]):not([type=submit])) { background: var(--field); color: var(--ink); border-color: var(--line); }

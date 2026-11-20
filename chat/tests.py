@@ -122,3 +122,40 @@ class ChatFlowTests(TestCase):
         r = self.client.get(reverse("chat:reports"))
         self.assertContains(r, "Chats started")
         self.assertContains(r, "Topic: Technical problem")
+
+
+class AssistantTests(TestCase):
+    def test_answers_from_help_content(self):
+        from chat import assistant
+        r = assistant.answer("how do i submit my idea")
+        self.assertTrue(r["answered"])
+        self.assertTrue(r["text"])
+        r = assistant.answer("why do you need my omang")
+        self.assertTrue(r["answered"])
+        self.assertIn("Omang", r["title"] + r["text"])
+
+    def test_unrelated_question_hands_over(self):
+        from chat import assistant
+        r = assistant.answer("what is the weather tomorrow")
+        self.assertFalse(r["answered"])
+        self.assertIn("consultant", r["text"].lower())
+
+    def test_ask_view_records_question_and_feedback(self):
+        from chat.models import AssistantQuery
+        r = self.client.post(reverse("chat:ask"), {"q": "which documents do i need"})
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        q = AssistantQuery.objects.get(pk=data["id"])
+        self.assertEqual(q.answered, data["answered"])
+        self.client.post(reverse("chat:ask_feedback", args=[q.pk]), {"helpful": "no"})
+        q.refresh_from_db()
+        self.assertFalse(q.helpful)
+
+    def test_ask_needs_post_and_question(self):
+        self.assertEqual(self.client.get(reverse("chat:ask")).status_code, 405)
+        self.assertFalse(self.client.post(reverse("chat:ask"), {"q": ""}).json()["answered"])
+
+    def test_chat_page_shows_assistant(self):
+        r = self.client.get(reverse("chat:client"))
+        self.assertContains(r, "Botlhami Assistant")
+        self.assertContains(r, "js/assistant.js")

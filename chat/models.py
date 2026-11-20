@@ -126,3 +126,15 @@ class ChatMessage(models.Model):
             self.sender.first_name or str(self.sender) if self.sender else self.conversation.display_name
         )
         return {"id": self.pk, "kind": self.kind, "name": name, "body": self.body, "at": timezone.localtime(self.created_at).strftime("%H:%M")}
+
+
+class AssistantQuery(models.Model):
+    """What people ask the assistant, so the Innovation Office can see which questions it couldn't answer."""
+    question = models.CharField(max_length=500)
+    matched = models.CharField(max_length=255, blank=True)
+    answered = models.BooleanField(default=False)
+    helpful = models.BooleanField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
