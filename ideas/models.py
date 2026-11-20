@@ -103,6 +103,11 @@ class Idea(models.Model):
     budget = models.DecimalField("estimated budget (BWP)", max_digits=12, decimal_places=2, null=True, blank=True)
     sdgs = models.JSONField(default=list, blank=True)
     team = models.TextField("team members and roles", blank=True)
+    # Implementation capacity: can the team actually deliver it?
+    capacity_skills = models.TextField("skills and experience", blank=True)
+    capacity_resources = models.TextField("resources in place", blank=True)
+    capacity_partners = models.TextField("partners and suppliers", blank=True)
+    capacity_gaps = models.TextField("gaps and how you'll fill them", blank=True)
     ip_declared = models.BooleanField(default=False)
 
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT, db_index=True)
@@ -140,6 +145,8 @@ class Idea(models.Model):
             ("Estimated budget", self.budget is not None),
             ("At least one SDG", bool(self.sdgs)),
             ("Team members and roles", bool(self.team.strip())),
+            ("Skills and experience", bool(self.capacity_skills.strip())),
+            ("Resources in place", bool(self.capacity_resources.strip())),
             ("Originality and IP declaration", self.ip_declared),
         ]
         return [label for label, ok in checks if not ok]

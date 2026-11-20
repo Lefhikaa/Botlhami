@@ -21,13 +21,19 @@
     <div class="grid2">{% include "_field.html" with field=form.jobs %}{% include "_field.html" with field=form.budget %}</div>
     <div class="field"><span class="label">{{ form.sdgs.label }} <span class="req">*</span></span><div class="checks">{% for cb in form.sdgs %}<label class="check">{{ cb.tag }} <span>{{ cb.choice_label }}</span></label>{% endfor %}</div></div>
   </fieldset>
-  <fieldset><legend>3. Team and documents</legend>
+  <fieldset><legend>3. Team and implementation capacity</legend>
+    <p class="small muted">Can you deliver it? Evaluators score this as part of "Feasibility and implementation capacity".</p>
     {% include "_field.html" with field=form.team %}
+    {% include "_field.html" with field=form.capacity_skills %}
+    {% include "_field.html" with field=form.capacity_resources %}
+    <div class="grid2">{% include "_field.html" with field=form.capacity_partners %}{% include "_field.html" with field=form.capacity_gaps %}</div>
+  </fieldset>
+  <fieldset><legend>4. Supporting documents</legend>
     {% include "_field.html" with field=form.documents %}
     {% if idea.documents.exists %}<ul class="docs">{% for d in idea.documents.all %}<li><a href="{% url 'ideas:document' idea.pk d.pk %}">📎 {{ d.original_name }}</a> <span class="muted small">{{ d.size|filesizeformat }}</span>
       <button class="linklike small" form="del-{{ d.pk }}">Remove</button></li>{% endfor %}</ul>{% endif %}
   </fieldset>
-  <fieldset><legend>4. Declaration</legend>{% include "_field.html" with field=form.ip_declared %}</fieldset>
+  <fieldset><legend>5. Declaration</legend>{% include "_field.html" with field=form.ip_declared %}</fieldset>
   <div class="row end">
     <button class="btn" name="action" value="draft">Save draft</button>
     <button class="btn btn-primary" name="action" value="submit">{% if idea.status == "revision" %}Resubmit for review{% else %}Submit idea{% endif %}</button>

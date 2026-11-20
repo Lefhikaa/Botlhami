@@ -24,7 +24,7 @@ def complete_idea(submitter, **kw):
         problem="Farmers lose much of their produce because they have no cold storage near their fields.",
         solution="Solar-powered cold rooms rented per crate per day, paid by mobile money, at collection points.",
         beneficiaries="Smallholder farmers", impact="Less waste and higher income", jobs=12, budget=480000,
-        sdgs=[2, 7], team="Neo (founder)", ip_declared=True,
+        sdgs=[2, 7], team="Neo (founder)", capacity_skills="Ten years in refrigeration.", capacity_resources="Two cold rooms and a van.", ip_declared=True,
     )
     data.update(kw)
     return Idea.objects.create(**data)
@@ -171,7 +171,7 @@ class WorkflowTests(TestCase):
             problem="Small businesses miss tenders because notices are scattered across many sites.",
             solution="A WhatsApp and web service that matches tenders to each SME and gives bid templates.",
             beneficiaries="SMEs", impact="More SMEs bidding", jobs=5, budget=150000, sdgs=[8, 9],
-            team="Neo (founder)", ip_declared="on", documents=doc, action="submit",
+            team="Neo (founder)", capacity_skills="Ten years in refrigeration.", capacity_resources="Two cold rooms and a van.", ip_declared="on", documents=doc, action="submit",
         )
         r = self.client.post(reverse("ideas:new"), data)
         idea = Idea.objects.get(title="TenderPing")
@@ -225,3 +225,15 @@ class WorkflowTests(TestCase):
             for name in names:
                 self.assertEqual(self.client.get(reverse(name)).status_code, 200, f"{user.role} {name}")
             self.assertEqual(self.client.get(reverse("ideas:detail", args=[idea.pk])).status_code, 200, user.role)
+
+
+class CapacityTests(TestCase):
+    def test_capacity_is_required_to_submit_and_scored_under_feasibility(self):
+        from .models import Criterion
+        u = User.objects.create_user(email="c@x.bw", password="Pass-word-123", role=Role.SUBMITTER)
+        idea = Idea.objects.create(submitter=u, title="T")
+        missing = idea.missing_items()
+        self.assertIn("Skills and experience", missing)
+        self.assertIn("Resources in place", missing)
+        self.assertTrue(Criterion.objects.filter(name="Feasibility and implementation capacity", weight=15, active=True).exists())
+        self.assertEqual(sum(Criterion.objects.filter(active=True).values_list("weight", flat=True)), 100)

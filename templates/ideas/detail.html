@@ -23,6 +23,10 @@
         <dt>Estimated budget</dt><dd>{% if idea.budget is not None %}P {{ idea.budget|floatformat:"0g" }}{% else %}—{% endif %}</dd>
         <dt>SDGs</dt><dd>{% for s in idea.sdgs %}<span class="tag">SDG {{ s }}</span> {% empty %}—{% endfor %}</dd>
         <dt>Team</dt><dd>{% if hide_applicant %}<span class="muted">Hidden for blind review</span>{% else %}{{ idea.team|linebreaksbr|default:"—" }}{% endif %}</dd>
+        <dt>Skills and experience</dt><dd>{{ idea.capacity_skills|linebreaksbr|default:"—" }}</dd>
+        <dt>Resources in place</dt><dd>{{ idea.capacity_resources|linebreaksbr|default:"—" }}</dd>
+        <dt>Partners and suppliers</dt><dd>{{ idea.capacity_partners|linebreaksbr|default:"—" }}</dd>
+        <dt>Gaps and plans</dt><dd>{{ idea.capacity_gaps|linebreaksbr|default:"—" }}</dd>
         <dt>Documents</dt><dd>{% for d in idea.documents.all %}<a class="tag" href="{% url 'ideas:document' idea.pk d.pk %}">📎 {{ d.original_name }}</a> {% empty %}—{% endfor %}</dd>
       </dl>
       {% else %}

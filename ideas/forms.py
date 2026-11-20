@@ -42,7 +42,8 @@ class IdeaForm(forms.ModelForm):
         model = Idea
         fields = [
             "title", "sector", "maturity", "location", "problem", "solution",
-            "beneficiaries", "impact", "jobs", "budget", "sdgs", "team", "ip_declared",
+            "beneficiaries", "impact", "jobs", "budget", "sdgs", "team",
+            "capacity_skills", "capacity_resources", "capacity_partners", "capacity_gaps", "ip_declared",
         ]
         labels = {
             "title": "Idea title", "problem": "What problem does it solve?", "solution": "Your solution",
@@ -54,13 +55,21 @@ class IdeaForm(forms.ModelForm):
             "problem": "At least 50 characters. Who has the problem, and how big is it?",
             "solution": "At least 50 characters. How does it work, and what makes it new?",
             "team": "One person per line, with their role.",
+            "capacity_skills": "The skills, qualifications and track record that equip the team to deliver this. "
+                               "Describe skills rather than naming people: evaluators review ideas without names.",
+            "capacity_resources": "What you already have: premises, equipment, a working prototype, customers, or money you'll put in yourself.",
+            "capacity_partners": "Optional. Suppliers, institutions, mentors or buyers you're working with, and whether it's agreed or still a plan.",
+            "capacity_gaps": "Optional. What's still missing, such as a skill, licence or piece of equipment, and how you'll get it.",
         }
         widgets = {
             "problem": forms.Textarea(attrs={"rows": 4}), "solution": forms.Textarea(attrs={"rows": 4}),
             "impact": forms.Textarea(attrs={"rows": 3}), "team": forms.Textarea(attrs={"rows": 3}),
+            "capacity_skills": forms.Textarea(attrs={"rows": 3}), "capacity_resources": forms.Textarea(attrs={"rows": 3}),
+            "capacity_partners": forms.Textarea(attrs={"rows": 2}), "capacity_gaps": forms.Textarea(attrs={"rows": 2}),
         }
 
-    MANDATORY = {"title", "sector", "maturity", "location", "problem", "solution", "beneficiaries", "impact", "jobs", "budget", "sdgs", "team", "ip_declared"}
+    MANDATORY = {"title", "sector", "maturity", "location", "problem", "solution", "beneficiaries", "impact", "jobs", "budget", "sdgs", "team",
+                 "capacity_skills", "capacity_resources", "ip_declared"}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

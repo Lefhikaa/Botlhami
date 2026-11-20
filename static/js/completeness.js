@@ -8,7 +8,8 @@
     () => val("problem").length >= 50, () => val("solution").length >= 50,
     () => val("beneficiaries"), () => val("impact"), () => val("jobs") !== "", () => val("budget") !== "",
     () => form.querySelectorAll('input[name="sdgs"]:checked').length > 0,
-    () => val("team"), () => form.elements["ip_declared"] && form.elements["ip_declared"].checked,
+    () => val("team"), () => val("capacity_skills"), () => val("capacity_resources"),
+    () => form.elements["ip_declared"] && form.elements["ip_declared"].checked,
   ];
   const bar = document.getElementById("meter-bar");
   const label = document.getElementById("meter-label");
