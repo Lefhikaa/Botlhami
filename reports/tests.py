@@ -33,7 +33,7 @@ class ReportsTests(TestCase):
         self.client.force_login(User.objects.get(role=Role.ADMIN, email__startswith="goitseone"))
         r = self.client.get(reverse("reports:dashboard"), {"days": 0})
         kpi = r.context["r"]["kpi"]
-        self.assertEqual(kpi["submitted"], 4)
+        self.assertEqual(kpi["submitted"], 7)
         self.assertEqual(kpi["awards"], 1)
         self.assertEqual(kpi["approval_rate"], 100)
         self.assertEqual(kpi["revised"], 1)
@@ -53,4 +53,4 @@ class ReportsTests(TestCase):
         self.assertEqual(r["Content-Type"], "text/csv; charset=utf-8")
         self.assertIn("IDX-", body)
         self.assertNotIn("Kgosi", body)
-        self.assertEqual(len(body.strip().splitlines()), 5)  # header + 4 ideas
+        self.assertEqual(len(body.strip().splitlines()), 8)  # header + 7 ideas

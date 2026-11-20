@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from accounts.models import Role, User
 from ideas import services as svc
-from ideas.models import Criterion, Idea, Status, StatusEvent
+from ideas.models import Criterion, Idea, Notification, Status, StatusEvent
 from support.models import Resource, ServiceLevel, Ticket
 
 # Days each demo idea spent in each status, so the reports show realistic timelines.
@@ -31,27 +31,57 @@ PEOPLE = [
     ("kabo.molefe@demo.botlhami.bw", "Kabo", "Molefe", Role.CONSULTANT, "CEDA customer service"),
 ]
 
+# Scores per criterion, in this order: innovation, market, feasibility, impact, strategic alignment, scalability.
+CRITERIA_ORDER = ["Innovation and originality", "Market potential", "Feasibility", "Economic and social impact",
+                  "Strategic alignment with CEDA", "Scalability"]
+
 IDEAS = [
     ("neo", dict(title="SolarCool: solar cold rooms for horticulture farmers", sector="Energy & water", maturity="Pilot", location="Gaborone",
         problem="Smallholder farmers lose much of their produce before it reaches buyers because they have no cold storage near their fields.",
         solution="Containerised cold rooms powered by solar panels, rented per crate per day at farmer collection points and paid by mobile money.",
         beneficiaries="Smallholder horticulture farmers", impact="Less post-harvest loss and steadier income; technician jobs.", jobs=12, budget=480000, sdgs=[2, 7, 8],
-        team="Neo Kgosi (founder)\nTwo refrigeration technicians"), "awarded"),
+        team="Neo Kgosi (founder)\nTwo refrigeration technicians"), "awarded", [
+        ("mpho", (5, 4, 4, 5, 4, 4), "advance", "Clear problem with pilot evidence. The rental model fits farmers' cash flow."),
+        ("thato", (4, 5, 4, 4, 5, 4), "advance", "Strong demand and good fit with CEDA's agriculture focus. Show unit costs per crate.")]),
     ("onalenna", dict(title="Morula Gold: value-added morula products", sector="Agriculture & agro-processing", maturity="Prototype", location="Serowe",
         problem="Morula fruit is harvested by rural women but mostly sold raw at low prices, and much of the crop goes to waste.",
         solution="A small processing unit turning morula into juice concentrate, jam and cosmetic oil, buying from harvester cooperatives.",
         beneficiaries="Rural women harvesters", impact="Higher, predictable harvester income.", jobs=15, budget=390000, sdgs=[1, 5, 8],
-        team="Onalenna Dube (founder, food technologist)"), "revision"),
+        team="Onalenna Dube (founder, food technologist)"), "revision", [
+        ("mpho", (3, 4, 2, 4, 4, 3), "revise", "Strong social impact, but the sourcing plan across seasons is unclear."),
+        ("thato", (3, 3, 2, 4, 3, 2), "revise", "Promising products. Add cost per unit and a plan for the months without fruit.")]),
     ("tumelo", dict(title="BoreSense: remote monitoring for village boreholes", sector="Energy & water", maturity="Pilot", location="Kanye",
         problem="Borehole pumps fail without warning and are only reported when taps run dry, leaving villages without water for days.",
         solution="Low-cost sensors on pumps send water-level and pump-health readings to a maintenance dashboard and SMS alerts.",
         beneficiaries="Rural communities and councils", impact="Fewer, shorter outages; technician jobs.", jobs=8, budget=310000, sdgs=[6, 9, 11],
-        team="Tumelo Phiri (founder, electrical engineer)"), "half"),
+        team="Tumelo Phiri (founder, electrical engineer)"), "half", [
+        ("mpho", (4, 4, 4, 5, 4, 4), "advance", "A real public need with a credible pilot. Councils are a clear buyer.")]),
     ("neo", dict(title="TenderPing: tender alerts for SMEs", sector="ICT & digital services", maturity="Prototype", location="Gaborone",
         problem="Small citizen-owned businesses miss public tenders because notices are scattered and bid documents are hard to prepare.",
         solution="A WhatsApp and web service that matches tenders to each SME's sectors and provides bid checklists and templates.",
         beneficiaries="Citizen-owned SMEs", impact="More SMEs bidding for and winning contracts.", jobs=5, budget=150000, sdgs=[8, 9],
-        team="Neo Kgosi (founder)\nFull-stack developer"), "submitted"),
+        team="Neo Kgosi (founder)\nFull-stack developer"), "submitted", []),
+    ("tumelo", dict(title="Thuto Pocket: offline maths tutor on basic phones", sector="Education & skills", maturity="Prototype", location="Maun",
+        problem="Many secondary pupils outside the cities have no tutor and no data bundles, so they fall behind in maths.",
+        solution="Short maths lessons and quizzes delivered by USSD and SMS, which work on any phone without data, with weekly progress reports for teachers.",
+        beneficiaries="Secondary school pupils and teachers", impact="Better maths results; local content jobs.", jobs=6, budget=220000, sdgs=[4, 10],
+        team="Tumelo Phiri (founder)\nTwo maths teachers"), "adjudication", [
+        ("mpho", (5, 4, 3, 5, 4, 5), "advance", "Genuinely new for Botswana and could reach every district. Needs a partner school pilot."),
+        ("thato", (2, 3, 3, 3, 3, 2), "decline", "Similar SMS tutoring has been tried. I'm not convinced pupils will pay or schools will adopt it.")]),
+    ("onalenna", dict(title="Kgomo Trace: cattle traceability with low-cost tags", sector="Agriculture & agro-processing", maturity="Pilot", location="Francistown",
+        problem="Small cattle farmers struggle to prove where their animals come from, which keeps them out of higher-paying export markets.",
+        solution="Low-cost tags read by a phone app record each animal's movements and treatments, ready for buyers and inspectors.",
+        beneficiaries="Small and emerging cattle farmers", impact="Access to export prices; fewer disputes over stock.", jobs=10, budget=360000, sdgs=[1, 8, 9],
+        team="Onalenna Dube (founder)\nVeterinary adviser"), "adjudication", [
+        ("mpho", (4, 5, 4, 4, 5, 4), "advance", "Strong market pull from export buyers and a clear fit with CEDA's agriculture priorities."),
+        ("lorato", (4, 4, 4, 4, 5, 5), "advance", "Well-run pilot. Scales easily to other districts and to neighbouring countries.")]),
+    ("neo", dict(title="Sebaka: shipping-container co-working spaces", sector="Other", maturity="Concept", location="Palapye",
+        problem="Young freelancers in smaller towns have nowhere affordable to work with reliable power and internet.",
+        solution="Converted shipping containers fitted out as co-working spaces, rented by the day or month.",
+        beneficiaries="Freelancers and young entrepreneurs", impact="Affordable workspace in smaller towns.", jobs=3, budget=280000, sdgs=[8, 11],
+        team="Neo Kgosi (founder)"), "adjudication", [
+        ("thato", (2, 2, 3, 2, 2, 2), "decline", "Co-working spaces already exist, and demand in Palapye isn't shown."),
+        ("lorato", (2, 3, 2, 2, 2, 2), "decline", "Needs evidence of demand and a cheaper way to start, such as renting an existing building.")]),
 ]
 
 
@@ -60,9 +90,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--password", required=True, help="Password for every demo account.")
+        parser.add_argument("--reset-ideas", action="store_true",
+                            help="Delete the demo applicants' ideas (and their evaluations and alerts) and create them again.")
 
     @transaction.atomic
-    def handle(self, *args, password, **opts):
+    def handle(self, *args, password, reset_ideas=False, **opts):
         users = {}
         for email, first, last, role, org in PEOPLE:
             u, _ = User.objects.get_or_create(email=email, defaults=dict(first_name=first, last_name=last, role=role, organisation=org, email_verified=True))
@@ -70,29 +102,33 @@ class Command(BaseCommand):
             u.save()
             users[first.lower()] = u
         self.seed_support(users)
+        if reset_ideas:
+            demo_ideas = Idea.objects.filter(submitter__email__endswith="@demo.botlhami.bw")
+            Notification.objects.filter(idea__in=demo_ideas).delete()
+            n = demo_ideas.count()
+            demo_ideas.delete()
+            self.stdout.write(f"Deleted {n} demo ideas.")
         if Idea.objects.exists():
             self.stdout.write("Ideas already exist; only demo users and help content were refreshed.")
             return
-        scores = lambda v: {str(c.pk): v for c in Criterion.objects.filter(active=True)}  # noqa: E731
-        admin, adj, ev1, ev2 = users["goitseone"], users["kefilwe"], users["mpho"], users["thato"]
-        for who, data, stage in IDEAS:
+        crit = {c.name: c for c in Criterion.objects.filter(active=True)}
+        admin, adj = users["goitseone"], users["kefilwe"]
+        for who, data, stage, evals in IDEAS:
             idea = Idea.objects.create(submitter=users[who], ip_declared=True, **data)
             svc.submit(idea, idea.submitter)
             if stage == "submitted":
                 continue
-            svc.accept_and_assign(idea, admin, [ev1, ev2])
-            svc.submit_evaluation(idea, ev1, scores(4), "Clear problem and a credible plan. Show unit costs next.", "advance", coi_declared=True)
-            if stage == "half":
-                continue
-            svc.submit_evaluation(idea, ev2, scores(5 if stage == "awarded" else 3), "Strong social impact; sourcing and costs need more detail.",
-                                  "advance" if stage == "awarded" else "revise", coi_declared=True)
+            svc.accept_and_assign(idea, admin, [users[e[0]] for e in evals] if stage != "half" else [users["mpho"], users["thato"]])
+            for ev, vals, rec, comment in evals:
+                scores = {str(crit[name].pk): v for name, v in zip(CRITERIA_ORDER, vals) if name in crit}
+                svc.submit_evaluation(idea, users[ev], scores, comment, rec, coi_declared=True)
             if stage == "awarded":
                 svc.decide(idea, adj, Status.APPROVED, "Strong pilot evidence and clear job creation.")
                 svc.grant_award(idea, adj, "seed", "Referred to CEDA financing with incubation support.", 250000)
             elif stage == "revision":
                 svc.decide(idea, adj, Status.REVISION, "Add a seasonal sourcing plan and a cost-per-unit estimate, then resubmit.")
         for n, idea in enumerate(Idea.objects.order_by("pk")):
-            self.backdate(idea, start_days_ago=[48, 36, 20, 2][n % 4])
+            self.backdate(idea, start_days_ago=[48, 36, 20, 2, 15, 12, 10][n % 7])
         self.stdout.write(self.style.SUCCESS(f"Created {len(PEOPLE)} demo users and {len(IDEAS)} ideas."))
 
     @staticmethod

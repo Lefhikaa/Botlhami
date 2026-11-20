@@ -126,6 +126,13 @@
     </section>
     {% endif %}
 
+    {% if engine %}
+    <section class="card engine-card"><div class="spread"><h3>Evaluation engine</h3>{% include "ideas/_verdict.html" with a=engine %}</div>
+      <ul class="engine-summary">{% for line in engine.summary %}<li>{{ line }}</li>{% endfor %}</ul>
+      <a class="btn btn-sm mt" href="{% url 'ideas:score_report' idea.pk %}">Open the score report</a>
+    </section>
+    {% endif %}
+
     {% if decision_form %}
     <form method="post" action="{% url 'ideas:decide' idea.pk %}" class="card accent">{% csrf_token %}
       <h3>Adjudication decision</h3>

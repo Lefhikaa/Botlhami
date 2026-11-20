@@ -12,6 +12,7 @@ from accounts.models import Role
 from audit.log import record
 from core.permissions import role_required
 
+from . import engine
 from . import services as svc
 from .forms import AwardForm, DecisionForm, EvaluationForm, IdeaForm, MessageForm, ReturnForm
 from .models import STAGES, Idea, IdeaDocument, Notification, Status, WorkflowSettings
@@ -132,6 +133,8 @@ def detail(request, pk):
     if user.has_role(Role.ADMIN, Role.ADJUDICATOR) or user.role == Role.OBSERVER or (user.role == Role.SUBMITTER and round_closed):
         ctx["combined"] = idea.combined_score()
         ctx["gap"] = idea.score_gap()
+    if user.has_role(*ENGINE_ROLES) and idea.status not in (Status.DRAFT, Status.SUBMITTED):
+        ctx["engine"] = engine.analyse(idea)
     if full and user.pk != idea.submitter_id:
         record("idea.viewed", target=idea.reference)  # who opened whose IP, for the audit trail
     return render(request, "ideas/detail.html", ctx)
@@ -262,9 +265,79 @@ def recuse(request, pk):
 @role_required(Role.ADJUDICATOR, Role.ADMIN)
 def adjudication(request):
     ws = WorkflowSettings.get()
-    pending = Idea.objects.filter(status=Status.ADJUDICATION)
+    pending = [(i, engine.analyse(i, ws)) for i in Idea.objects.filter(status=Status.ADJUDICATION)]
     approved = Idea.objects.filter(status=Status.APPROVED)
     return render(request, "ideas/adjudication.html", {"pending": pending, "approved": approved, "ws": ws})
+
+
+ENGINE_ROLES = (Role.ADMIN, Role.ADJUDICATOR)
+
+
+@role_required(*ENGINE_ROLES)
+def score_report(request, pk):
+    """The evaluation engine's full report on one idea: radar, criterion table, flags and recommendation."""
+    idea = get_object_or_404(Idea, pk=pk)
+    a = engine.analyse(idea)
+    ctx = {"idea": idea, "a": a}
+    if a:
+        ctx["legend"] = [(f"Evaluator {l}", engine.SERIES[i % len(engine.SERIES)], False) for i, l in enumerate(a.letters)]
+        if len(a.evaluations) > 1:
+            ctx["legend"].append(("Average", engine.INK, True))
+        ctx["rows"] = [(c, [e.scores.get(c.id) for e in a.evaluations]) for c in a.criteria]
+    if idea.status == Status.ADJUDICATION:
+        assigned = idea.assignments.filter(round=idea.round).values_list("evaluator_id", flat=True)
+        ctx["spare_evaluators"] = User.objects.filter(role=Role.EVALUATOR, is_active=True).exclude(pk__in=assigned)
+    record("report.score_viewed", target=idea.reference)
+    return render(request, "ideas/score_report.html", ctx)
+
+
+@require_POST
+@role_required(*ENGINE_ROLES)
+def further_assessment(request, pk):
+    idea = get_object_or_404(Idea, pk=pk)
+    ev = get_object_or_404(User, pk=request.POST.get("evaluator"), role=Role.EVALUATOR)
+    try:
+        svc.request_further_assessment(idea, request.user, ev)
+        messages.success(request, f"{ev} has been asked for a further assessment of {idea.reference}.")
+    except svc.WorkflowError as e:
+        _flash_error(request, e)
+    return redirect("ideas:score_report", pk=idea.pk)
+
+
+@role_required(*ENGINE_ROLES)
+def score_portfolio(request):
+    """Every scored idea side by side, with a radar comparing up to five of them."""
+    ws = WorkflowSettings.get()
+    ideas = Idea.objects.exclude(status__in=(Status.DRAFT, Status.SUBMITTED))
+    rows = [r for r in (engine.portfolio_row(i, ws) for i in ideas) if r]
+    sort = request.GET.get("sort", "score")
+    keys = {
+        "score": lambda r: -r["a"].combined,
+        "spread": lambda r: -r["a"].total_sd,
+        "title": lambda r: r["idea"].title.lower(),
+        "verdict": lambda r: [engine.FURTHER, engine.APPROVE, engine.DECLINE, engine.WAITING].index(r["a"].verdict),
+    }
+    rows.sort(key=keys.get(sort, keys["score"]))
+    try:
+        chosen = [int(x) for x in request.GET.getlist("compare")][:5]
+    except ValueError:
+        chosen = []
+    if not chosen:  # by default, compare the ideas waiting for a decision
+        waiting = [r["idea"].pk for r in rows if r["idea"].status == Status.ADJUDICATION]
+        chosen = (waiting or [r["idea"].pk for r in sorted(rows, key=keys["score"])])[:3]
+    compare = [r for r in rows if r["idea"].pk in chosen][:5]
+    criteria = [c.name for c in svc.active_criteria()]
+    series = []
+    for n, r in enumerate(compare):
+        by_name = {c.name: c.avg for c in r["a"].criteria}
+        series.append((f"{r['idea'].reference} {r['idea'].title.split(':')[0]}", [by_name.get(name) for name in criteria],
+                       engine.SERIES[n % len(engine.SERIES)], False))
+        r["colour"] = engine.SERIES[n % len(engine.SERIES)]
+    radar = engine.radar_svg(criteria, series, size=320, title="Average criterion scores of the compared ideas") if series else ""
+    return render(request, "ideas/score_portfolio.html", {
+        "rows": rows, "sort": sort, "chosen": [r["idea"].pk for r in compare], "compare": compare, "radar": radar,
+        "ws": ws, "counts": {v: sum(1 for r in rows if r["a"].verdict == v) for v in engine.LABELS},
+    })
 
 
 @require_POST

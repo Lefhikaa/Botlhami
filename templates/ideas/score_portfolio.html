@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% load ideas_tags %}{% block title %}Compare scores{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Compare scores</h1><p class="muted">Every evaluated idea, with the evaluation engine's recommendation. Tick up to five ideas to compare them on the chart.</p></div></div>
+<div class="kpis">
+  <div class="card kpi"><span class="muted small">Recommend approval</span><strong>{{ counts.approve }}</strong></div>
+  <div class="card kpi"><span class="muted small">Needs further assessment</span><strong>{{ counts.further }}</strong></div>
+  <div class="card kpi"><span class="muted small">Recommend decline</span><strong>{{ counts.decline }}</strong></div>
+  <div class="card kpi"><span class="muted small">Waiting for evaluations</span><strong>{{ counts.waiting }}</strong></div>
+</div>
+<form method="get" class="stack mt">
+  <section class="card compare-card">
+    <div>{% if radar %}<div class="radar-wrap">{{ radar|safe }}</div>{% else %}<p class="muted">Tick ideas in the table to compare them.</p>{% endif %}</div>
+    <div><h2>Compare ideas</h2><p class="small muted">Average score per criterion on the 1–5 scale. Wider shapes are stronger ideas; a shape pulled in on one side shows a weak criterion.</p>
+      <ul class="chart-legend chart-legend-stack">{% for r in compare %}<li><span class="sw" style="--c: {{ r.colour }}"></span><span><strong>{{ r.idea.title|truncatechars:44 }}</strong><br><span class="small muted">{{ r.idea.reference }} · {{ r.a.combined }}/100 · {{ r.a.label }}</span></span></li>{% endfor %}</ul>
+      <p class="small muted mt">Tick up to five ideas below and choose Update.</p></div>
+  </section>
+  <section class="card"><div class="spread"><h2>All evaluated ideas</h2>
+    <div class="row small">Sort by <select name="sort" aria-label="Sort by">
+      <option value="score"{% if sort == "score" %} selected{% endif %}>Combined score</option>
+      <option value="verdict"{% if sort == "verdict" %} selected{% endif %}>Recommendation</option>
+      <option value="spread"{% if sort == "spread" %} selected{% endif %}>Disagreement</option>
+      <option value="title"{% if sort == "title" %} selected{% endif %}>Title</option></select>
+      <button class="btn btn-sm btn-primary">Update</button></div></div>
+    <div class="table-scroll"><table class="table"><thead><tr><th><span class="sr">Compare</span></th><th>Idea</th><th class="num">Combined</th><th class="num">Avg /5</th><th class="num">Std dev</th><th class="num">Scored by</th><th>Recommendation</th></tr></thead><tbody>
+    {% for r in rows %}<tr><td><input type="checkbox" name="compare" value="{{ r.idea.pk }}" aria-label="Compare {{ r.idea.reference }}"{% if r.idea.pk in chosen %} checked{% endif %}></td>
+      <td><a href="{% url 'ideas:score_report' r.idea.pk %}"><strong>{{ r.idea.title }}</strong></a><div class="small muted">{{ r.idea.reference }} · {{ r.idea.get_status_display }}</div></td>
+      <td class="num">{% score_badge r.a.combined %}</td><td class="num">{{ r.avg }}</td><td class="num">{{ r.a.total_sd|floatformat:1 }}</td><td class="num">{{ r.a.evaluations|length }}</td>
+      <td>{% include "ideas/_verdict.html" with a=r.a %}{% if r.a.disagreements %}<div class="small muted">Disagree on {{ r.a.disagreements|length }} criteri{{ r.a.disagreements|length|pluralize:"on,a" }}</div>{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="7" class="muted">No ideas have been evaluated yet.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+</form>
+{% endblock %}

@@ -1,9 +1,12 @@
 {% extends "base.html" %}{% load ideas_tags %}{% block title %}Adjudication{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>Adjudication</h1><p class="muted">Ideas that have finished evaluation, and approved ideas awaiting an award. Pass mark: {{ ws.pass_mark }}/100.</p></div></div>
+<div class="page-head"><div><h1>Adjudication</h1><p class="muted">Ideas that have finished evaluation, and approved ideas awaiting an award. Pass mark: {{ ws.pass_mark }}/100.</p></div>
+<a class="btn" href="{% url 'ideas:scores' %}">Compare all scores</a></div>
 <section class="card"><h2>Awaiting decision</h2>
-{% if pending %}<table class="table"><thead><tr><th>Idea</th><th class="num">Combined</th><th class="num">Gap</th><th>Waiting</th><th></th></tr></thead><tbody>
-{% for i in pending %}<tr><td><a href="{% url 'ideas:detail' i.pk %}"><strong>{{ i.title }}</strong></a><div class="muted small">{{ i.reference }} · {{ i.sector }}</div></td><td class="num">{% score_badge i.combined_score %}</td><td class="num">{{ i.score_gap }}</td><td>{{ i.days_in_status }} days</td><td><a class="btn btn-primary btn-sm" href="{% url 'ideas:detail' i.pk %}">Decide</a></td></tr>{% endfor %}
+{% if pending %}<table class="table"><thead><tr><th>Idea</th><th class="num">Combined</th><th>Engine recommendation</th><th>Waiting</th><th></th></tr></thead><tbody>
+{% for i, a in pending %}<tr><td><a href="{% url 'ideas:detail' i.pk %}"><strong>{{ i.title }}</strong></a><div class="muted small">{{ i.reference }} · {{ i.sector }}</div></td><td class="num">{% score_badge a.combined %}</td>
+<td>{% if a %}{% include "ideas/_verdict.html" %}<div class="small muted">{{ a.reasons.0 }}</div>{% endif %}</td><td>{{ i.days_in_status }} day{{ i.days_in_status|pluralize }}</td>
+<td class="actions"><a class="btn btn-sm" href="{% url 'ideas:score_report' i.pk %}">Score report</a> <a class="btn btn-primary btn-sm" href="{% url 'ideas:detail' i.pk %}">Decide</a></td></tr>{% endfor %}
 </tbody></table>{% else %}<p class="muted">Nothing waiting.</p>{% endif %}
 </section>
 <section class="card mt"><h2>Approved, award pending</h2>

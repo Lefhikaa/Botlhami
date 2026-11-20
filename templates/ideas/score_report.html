@@ -1,0 +1,53 @@
+{% extends "base.html" %}{% load ideas_tags %}{% block title %}Score report · {{ idea.reference }}{% endblock %}
+{% block content %}
+<div class="page-head"><div><span class="tag">{{ idea.reference }}</span><h1 class="mt-s">Score report</h1>
+<p class="muted">{{ idea.title }} · round {{ idea.round }} · {% status_pill idea %}</p></div>
+<div class="row"><a class="btn btn-sm" href="{% url 'ideas:scores' %}">Compare all ideas</a><a class="btn btn-sm" href="{% url 'ideas:detail' idea.pk %}">Back to the idea</a></div></div>
+{% if not a %}
+<section class="card"><p class="muted">No evaluations have been submitted for this round yet.</p></section>
+{% else %}
+<section class="card verdict-card v-{{ a.verdict }}-card">
+  <div class="verdict-head">
+    <div>{% include "ideas/_verdict.html" %}
+      <p class="verdict-score"><strong>{{ a.combined }}</strong><span>/100 combined · pass mark {{ a.pass_mark }}</span></p></div>
+    <div class="verdict-why"><h3>Why</h3><ul>{% for r in a.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+      <p class="small muted">The engine advises; the adjudication panel decides.</p></div>
+  </div>
+</section>
+
+<div class="report-grid mt">
+  <section class="card"><h2>Scores by criterion</h2>
+    <p class="small muted">Each evaluator scored independently on a 1–5 scale. Evaluators appear as letters, never by name.</p>
+    <div class="radar-wrap">{{ a.radar|safe }}</div>
+    <ul class="chart-legend">{% for label, colour, dashed in legend %}<li><span class="sw{% if dashed %} sw-dash{% endif %}" style="--c: {{ colour }}"></span>{{ label }}</li>{% endfor %}</ul>
+  </section>
+  <section class="card"><h2>Evaluation summary</h2>
+    <ul class="engine-summary">{% for line in a.summary %}<li>{{ line }}</li>{% endfor %}</ul>
+    <div class="grid2 mt">
+      <div><h3>Strengths</h3>{% if a.strengths %}<ul class="chips">{% for c in a.strengths %}<li class="chip chip-ok">{{ c.name }} <b>{{ c.avg }}</b></li>{% endfor %}</ul>{% else %}<p class="small muted">No criterion averages 4 or more.</p>{% endif %}</div>
+      <div><h3>Weaknesses</h3>{% if a.weaknesses %}<ul class="chips">{% for c in a.weaknesses %}<li class="chip chip-bad">{{ c.name }} <b>{{ c.avg }}</b></li>{% endfor %}</ul>{% else %}<p class="small muted">No criterion averages 2.5 or less.</p>{% endif %}</div>
+    </div>
+    <h3 class="mt">Where evaluators disagree</h3>
+    {% if a.disagreements %}<ul class="chips">{% for c in a.disagreements %}<li class="chip chip-warn">{{ c.name }} <b>{{ c.low }}–{{ c.high }}</b></li>{% endfor %}</ul>
+    <p class="small muted">A gap of 2 or more points on one criterion is flagged.</p>{% else %}<p class="small ok">✓ Evaluators agree within 1 point on every criterion.</p>{% endif %}
+    {% if spare_evaluators %}
+    <form method="post" action="{% url 'ideas:further_assessment' idea.pk %}" class="further mt">{% csrf_token %}
+      <h3>Ask for a further assessment</h3>
+      <p class="small muted">Sends the idea back to evaluation for one more independent score. The applicant is told it's getting another review.</p>
+      <div class="row"><label class="sr" for="ev">Evaluator</label><select id="ev" name="evaluator" required>{% for e in spare_evaluators %}<option value="{{ e.pk }}">{{ e.first_name }} {{ e.last_name }}</option>{% endfor %}</select>
+      <button class="btn btn-primary">Add evaluator</button></div>
+    </form>{% endif %}
+  </section>
+</div>
+
+<section class="card mt"><h2>Criterion breakdown</h2>
+  <div class="table-scroll"><table class="table"><thead><tr><th>Criterion</th><th class="num">Weight</th>{% for l in a.letters %}<th class="num">Evaluator {{ l }}</th>{% endfor %}<th class="num">Average</th><th class="num">Range</th><th>Flag</th></tr></thead><tbody>
+  {% for c, scores in rows %}<tr><td>{{ c.name }}</td><td class="num">{{ c.weight }}%</td>{% for s in scores %}<td class="num">{{ s|default:"—" }}</td>{% endfor %}<td class="num"><strong>{{ c.avg|default:"—" }}</strong></td><td class="num">{% if c.low %}{{ c.low }}–{{ c.high }}{% endif %}</td>
+  <td>{% if c.disagree %}<span class="pill s-revision">Disagree</span>{% elif c.avg >= 4 %}<span class="pill s-approved">Strength</span>{% elif c.avg and c.avg <= 2.5 %}<span class="pill s-rejected">Weakness</span>{% endif %}</td></tr>{% endfor %}
+  <tr class="total-row"><td><strong>Weighted total</strong></td><td class="num">100%</td>{% for t in a.totals %}<td class="num"><strong>{{ t }}</strong></td>{% endfor %}<td class="num"><strong>{{ a.combined }}</strong></td><td class="num">{% if a.totals|length > 1 %}σ {{ a.total_sd }}{% endif %}</td><td></td></tr>
+  </tbody></table></div>
+  <h3 class="mt">What each evaluator recommended</h3>
+  <ul class="evals">{% for e in a.evaluations %}<li><strong>Evaluator {% cycle 'A' 'B' 'C' 'D' 'E' 'F' 'G' %}</strong>: {{ e.get_recommendation_display }} · {{ e.total }}/100<div class="small">{{ e.comment }}</div>{% if e.private_note %}<div class="small muted">Note for the panel: {{ e.private_note }}</div>{% endif %}</li>{% endfor %}</ul>
+</section>
+{% endif %}
+{% endblock %}

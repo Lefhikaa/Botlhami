@@ -200,6 +200,26 @@ def add_evaluator(idea, actor, evaluator):
     notify([evaluator], f"You have been assigned {idea.reference} for evaluation.", idea)
 
 
+def request_further_assessment(idea, actor, evaluator, note=""):
+    """Send an idea in adjudication back for one more independent evaluation in the same round."""
+    if not actor.has_role(Role.ADJUDICATOR, Role.ADMIN):
+        raise WorkflowError("Only adjudicators and administrators can ask for a further assessment.")
+    if idea.status != Status.ADJUDICATION:
+        raise WorkflowError("Further assessment can only be requested while an idea is in adjudication.")
+    if evaluator.role != Role.EVALUATOR:
+        raise WorkflowError("Choose an evaluator.")
+    if idea.assignments.filter(round=idea.round, evaluator=evaluator).exists():
+        raise WorkflowError("That evaluator has already been assigned this idea in this round.")
+    ws = WorkflowSettings.get()
+    with transaction.atomic():
+        Assignment.objects.create(idea=idea, evaluator=evaluator, round=idea.round,
+                                  due_at=timezone.now() + timedelta(days=ws.evaluation_days))
+        idea.set_status(Status.IN_REVIEW, actor, note or "Further assessment requested by the panel.")
+    record("idea.further_assessment", target=idea.reference, actor=actor, detail=str(evaluator))
+    notify([evaluator], f"You have been asked for an independent assessment of {idea.reference}.", idea)
+    notify([idea.submitter], f"{idea.reference} is getting one more independent review before a decision.", idea)
+
+
 # --- adjudicator actions ----------------------------------------------------
 DECISIONS = {
     Status.APPROVED: ("decision.approved", "Good news: {ref} ({title}) has been approved."),
