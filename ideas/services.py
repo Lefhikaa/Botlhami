@@ -15,7 +15,7 @@ from django.utils import timezone
 from accounts.models import Role
 from audit.log import record
 
-from .models import Assignment, Award, Criterion, Evaluation, Idea, Message, Notification, Status, WorkflowSettings
+from .models import Assignment, Award, Criterion, Evaluation, Idea, Message, Milestone, Notification, Status, WorkflowSettings
 
 User = get_user_model()
 
@@ -50,6 +50,8 @@ def can_view(user, idea):
         return idea.assignments.filter(evaluator=user).exists()
     if user.role == Role.OBSERVER:
         return idea.status != Status.DRAFT
+    if user.role == Role.CONSULTANT:  # a CEDA officer supporting an awarded idea
+        return Award.objects.filter(idea=idea, officer=user).exists()
     return False
 
 
@@ -248,18 +250,112 @@ def decide(idea, adjudicator, outcome, reason):
         notify(users_with_role(Role.ADMIN), f"{idea.reference} is approved and waiting for an award.", idea)
 
 
-def grant_award(idea, actor, category, message, amount=None):
+# What follows an award: a short, standard implementation plan the officer can then adjust.
+FIRST_STEP = {
+    "seed": ("Financing application submitted to CEDA", "Prepare and submit the full financing application with your CEDA officer."),
+    "incubation": ("Incubator placement confirmed", "Agree the incubator, the mentor and the programme start date."),
+    "champion": ("Recognition event and profile", "Take part in the Innovation Champion event and share your story."),
+    "pilot": ("Pilot agreement and site confirmed", "Agree the pilot scope, site, timeline and how success is measured."),
+}
+
+
+def default_milestones(category):
+    first = FIRST_STEP.get(category, FIRST_STEP["seed"])
+    return [
+        ("Accept the award", "Confirm you accept the award and its conditions.", 14),
+        ("Onboarding meeting with your CEDA officer", "Agree how you'll work together and how progress is reported.", 30),
+        (first[0], first[1], 45),
+        ("Implementation plan and budget agreed", "A month-by-month plan with costs, jobs and the results you expect.", 60),
+        ("First progress report", "What's done, what's next, money spent and jobs created so far.", 90),
+        ("Six-month review", "Review results with CEDA and adjust the plan if needed.", 180),
+        ("Final report and impact results", "Jobs created, revenue and the difference the solution has made.", 365),
+    ]
+
+
+def grant_award(idea, actor, category, message, amount=None, officer=None):
     if not actor.has_role(Role.ADJUDICATOR, Role.ADMIN):
         raise WorkflowError("You can't grant awards.")
     if idea.status != Status.APPROVED:
         raise WorkflowError("Only approved ideas can receive an award.")
     if not message.strip():
         raise WorkflowError("Add a message to the applicant.")
-    award = Award.objects.create(idea=idea, category=category, amount=amount, message=message.strip(), granted_by=actor)
-    idea.set_status(Status.AWARDED, actor, award.get_category_display())
+    if officer and not officer.has_role(Role.ADMIN, Role.CONSULTANT, Role.ADJUDICATOR):
+        raise WorkflowError("The CEDA officer must be a CEDA staff member.")
+    with transaction.atomic():
+        award = Award.objects.create(idea=idea, category=category, amount=amount, message=message.strip(), granted_by=actor,
+                                     officer=officer)
+        today = timezone.localdate()
+        Milestone.objects.bulk_create([
+            Milestone(award=award, title=t, description=d, due_date=today + timedelta(days=days), order=i)
+            for i, (t, d, days) in enumerate(default_milestones(category))
+        ])
+        idea.set_status(Status.AWARDED, actor, award.get_category_display())
     record("award.granted", target=idea.reference, actor=actor, detail=f"{award.get_category_display()} {amount or ''}".strip())
-    notify([idea.submitter], f"Congratulations! {idea.title} has been awarded: {award.get_category_display()}.", idea)
+    notify([idea.submitter], f"Congratulations! {idea.title} has been awarded: {award.get_category_display()}. "
+                             "Your implementation plan and next steps are on the idea page.", idea)
+    if officer:
+        notify([officer], f"You're the CEDA officer for {idea.reference}, which has just been awarded.", idea)
     return award
+
+
+def implementation_staff(award):
+    """Who hears about progress: the award's officer, or every administrator if none is set."""
+    return [award.officer] if award.officer else list(users_with_role(Role.ADMIN))
+
+
+def can_manage_implementation(user, award):
+    return user.has_role(Role.ADMIN, Role.ADJUDICATOR) or (award.officer_id and award.officer_id == user.pk)
+
+
+def update_milestone(milestone, actor, status, note):
+    award = milestone.award
+    idea = award.idea
+    is_applicant = actor.pk == idea.submitter_id
+    if not (is_applicant or can_manage_implementation(actor, award)):
+        raise WorkflowError("You can't update this plan.")
+    if status not in Milestone.Status.values:
+        raise WorkflowError("Choose a status.")
+    if is_applicant and not note.strip() and status != milestone.status:
+        raise WorkflowError("Add a short update so your CEDA officer knows what changed.")
+    milestone.status = status
+    if note.strip():
+        milestone.update = note.strip()
+    milestone.updated_at, milestone.updated_by = timezone.now(), actor
+    if status != Milestone.Status.DONE:
+        milestone.confirmed_at = milestone.confirmed_by = None
+    elif not is_applicant:  # staff marking it done confirms it at the same time
+        milestone.confirmed_at, milestone.confirmed_by = timezone.now(), actor
+    milestone.save()
+    record("milestone.updated", target=idea.reference, actor=actor, detail=f"{milestone.title}: {milestone.get_status_display()}")
+    if is_applicant:
+        notify(implementation_staff(award), f"{idea.reference} progress: {milestone.title} is now {milestone.get_status_display().lower()}.", idea)
+    else:
+        notify([idea.submitter], f"Your CEDA officer updated '{milestone.title}' on {idea.reference}.", idea)
+
+
+def confirm_milestone(milestone, actor):
+    award = milestone.award
+    if not can_manage_implementation(actor, award):
+        raise WorkflowError("Only CEDA staff can confirm a milestone.")
+    if milestone.status != Milestone.Status.DONE:
+        raise WorkflowError("Only a milestone marked as done can be confirmed.")
+    milestone.confirmed_at, milestone.confirmed_by = timezone.now(), actor
+    milestone.save(update_fields=["confirmed_at", "confirmed_by"])
+    record("milestone.confirmed", target=award.idea.reference, actor=actor, detail=milestone.title)
+    notify([award.idea.submitter], f"CEDA confirmed '{milestone.title}' on {award.idea.reference}.", award.idea)
+
+
+def add_milestone(award, actor, title, due_date, description=""):
+    if not can_manage_implementation(actor, award):
+        raise WorkflowError("Only CEDA staff can change the plan.")
+    if not title.strip():
+        raise WorkflowError("Give the milestone a title.")
+    last = award.milestones.order_by("-order").first()
+    m = Milestone.objects.create(award=award, title=title.strip(), description=description.strip(), due_date=due_date,
+                                 order=(last.order + 1) if last else 0)
+    record("milestone.added", target=award.idea.reference, actor=actor, detail=m.title)
+    notify([award.idea.submitter], f"A milestone was added to your plan for {award.idea.reference}: {m.title}.", award.idea)
+    return m
 
 
 # --- conversation -----------------------------------------------------------

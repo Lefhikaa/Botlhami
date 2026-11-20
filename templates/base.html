@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#134e5a">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="{% static 'js/confirm.js' %}" defer></script>
+  <script src="{% static 'js/password-toggle.js' %}" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -28,6 +29,7 @@
         {% if user.role == "admin" or user.role == "adjudicator" or user.role == "observer" %}<a href="{% url 'ideas:pipeline' %}">Pipeline</a>{% endif %}
         {% if user.role == "admin" or user.role == "adjudicator" or user.role == "observer" %}<a href="{% url 'reports:dashboard' %}">Reports</a>{% endif %}
         {% if user.role == "consultant" or user.role == "admin" %}<a href="{% url 'chat:console' %}">Chat</a><a href="{% url 'support:queue' %}">Support</a>{% endif %}
+        {% if user.role == "consultant" %}<a href="{% url 'ideas:implementation' %}">My awards</a>{% endif %}
         {% if user.role == "admin" %}<a href="{% url 'support:manage_home' %}">Content</a><a href="{% url 'admin:index' %}">Admin</a>{% endif %}
         {% if user.role == "submitter" or user.role == "evaluator" %}<a href="{% url 'support:help' %}">Help</a>{% endif %}
         <a href="{% url 'ideas:notifications' %}" aria-label="Notifications">🔔{% if unread_count %}<span class="badge">{{ unread_count }}</span>{% endif %}</a>

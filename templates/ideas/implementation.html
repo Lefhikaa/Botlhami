@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% load ideas_tags %}{% block title %}Implementation{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Implementation</h1><p class="muted">Awarded ideas and how they're going after the award. Applicants report progress on each step; CEDA officers confirm it.</p></div></div>
+<div class="kpis">
+  <div class="card kpi"><span class="muted small">Ideas in implementation</span><strong>{{ totals.awards }}</strong></div>
+  <div class="card kpi"><span class="muted small">Steps done</span><strong>{{ totals.done }}<span class="small muted"> / {{ totals.total }}</span></strong></div>
+  <div class="card kpi"><span class="muted small">Waiting for CEDA to confirm</span><strong{% if totals.waiting %} class="warn-text"{% endif %}>{{ totals.waiting }}</strong></div>
+  <div class="card kpi"><span class="muted small">Overdue or at risk</span><strong{% if totals.overdue or totals.at_risk %} class="bad"{% endif %}>{{ totals.overdue|add:totals.at_risk }}</strong></div>
+</div>
+<section class="card mt">
+{% if rows %}<div class="table-scroll"><table class="table"><thead><tr><th>Idea</th><th>Award</th><th>CEDA officer</th><th>Progress</th><th>Next step</th><th>Flags</th></tr></thead><tbody>
+{% for a, p in rows %}<tr>
+  <td><a href="{% url 'ideas:detail' a.idea.pk %}#plan"><strong>{{ a.idea.title }}</strong></a><div class="small muted">{{ a.idea.reference }} · awarded {{ a.granted_at|date:"j M Y" }}</div></td>
+  <td class="small">{{ a.get_category_display }}{% if a.amount %}<div class="muted">P{{ a.amount|floatformat:"0g" }}</div>{% endif %}</td>
+  <td class="small">{% if a.officer %}{{ a.officer.first_name }} {{ a.officer.last_name }}{% else %}<span class="bad">Not assigned</span>{% endif %}</td>
+  <td><div class="mini-progress" title="{{ p.done }} of {{ p.total }} steps done"><i style="width: {{ p.pct }}%"></i></div><span class="small muted">{{ p.done }} of {{ p.total }}</span></td>
+  <td class="small">{% if p.next %}{{ p.next.title }}<div class="{% if p.next.overdue %}bad{% else %}muted{% endif %}">due {{ p.next.due_date|date:"j M" }}</div>{% else %}<span class="ok">✓ All done</span>{% endif %}</td>
+  <td class="small">{% if p.overdue %}<span class="pill s-rejected">{{ p.overdue }} overdue</span> {% endif %}{% if p.at_risk %}<span class="pill s-revision">{{ p.at_risk }} at risk</span>{% endif %}{% if not p.overdue and not p.at_risk %}<span class="muted">—</span>{% endif %}</td>
+</tr>{% endfor %}</tbody></table></div>
+{% else %}<p class="muted">No ideas have been awarded yet.</p>{% endif %}
+</section>
+{% endblock %}

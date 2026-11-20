@@ -99,8 +99,31 @@ class DecisionForm(forms.Form):
 class AwardForm(forms.ModelForm):
     class Meta:
         model = Award
-        fields = ["category", "amount", "message"]
+        fields = ["category", "amount", "message", "officer"]
         widgets = {"message": forms.Textarea(attrs={"rows": 3})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from accounts.models import Role, User
+        self.fields["officer"].queryset = User.objects.filter(role__in=[Role.ADMIN, Role.CONSULTANT], is_active=True).order_by("first_name")
+        self.fields["officer"].empty_label = "Choose later"
+
+
+class MilestoneUpdateForm(forms.Form):
+    status = forms.ChoiceField(choices=[])
+    note = forms.CharField(label="Update", required=False, max_length=2000,
+                           widget=forms.Textarea(attrs={"rows": 2, "placeholder": "What's happened, and anything you need from CEDA"}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from .models import Milestone
+        self.fields["status"].choices = Milestone.Status.choices
+
+
+class MilestoneAddForm(forms.Form):
+    title = forms.CharField(max_length=150)
+    due_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    description = forms.CharField(max_length=255, required=False)
 
 
 class MessageForm(forms.Form):

@@ -293,6 +293,52 @@ class Award(models.Model):
     message = models.TextField("message to the applicant")
     granted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     granted_at = models.DateTimeField(auto_now_add=True)
+    officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name="awards_supported", verbose_name="CEDA officer",
+                                help_text="The person who supports the applicant during implementation.")
+
+    def progress(self):
+        ms = list(self.milestones.all())
+        done = sum(1 for m in ms if m.status == Milestone.Status.DONE)
+        return {"done": done, "total": len(ms), "pct": round(done * 100 / len(ms)) if ms else 0,
+                "overdue": sum(1 for m in ms if m.overdue), "at_risk": sum(1 for m in ms if m.status == Milestone.Status.AT_RISK),
+                "next": next((m for m in ms if m.status != Milestone.Status.DONE), None)}
+
+
+class Milestone(models.Model):
+    """A step in putting an awarded idea into practice. The applicant reports progress; CEDA confirms."""
+
+    class Status(models.TextChoices):
+        PLANNED = "planned", "Not started"
+        IN_PROGRESS = "in_progress", "In progress"
+        AT_RISK = "at_risk", "At risk"
+        DONE = "done", "Done"
+
+    award = models.ForeignKey(Award, on_delete=models.CASCADE, related_name="milestones")
+    title = models.CharField(max_length=150)
+    description = models.CharField(max_length=255, blank=True)
+    due_date = models.DateField()
+    status = models.CharField(max_length=12, choices=Status.choices, default=Status.PLANNED)
+    update = models.TextField("latest update", blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    confirmed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "due_date", "id"]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def overdue(self):
+        return self.status != self.Status.DONE and self.due_date < timezone.localdate()
+
+    @property
+    def awaiting_confirmation(self):
+        return self.status == self.Status.DONE and not self.confirmed_at
 
 
 class Notification(models.Model):

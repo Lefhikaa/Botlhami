@@ -54,6 +54,16 @@
     {% for w in r.workload %}<tr><td>{{ w.name }}</td><td class="num">{{ w.pending }}</td><td class="num{% if w.late %} bad{% endif %}">{{ w.late }}</td><td class="num">{{ w.done }}</td><td class="num">{{ w.recused }}</td></tr>{% endfor %}
     </tbody></table>{% else %}<p class="muted">No evaluators yet.</p>{% endif %}
   </section>
+  <section class="card"><h3>After the award</h3>
+    <table class="table"><tbody>
+      <tr><td>Ideas in implementation</td><td class="num">{{ r.implementation.awards }}</td></tr>
+      <tr><td>Plan steps done</td><td class="num">{{ r.implementation.done }} of {{ r.implementation.total }}{% if r.implementation.pct is not None %} ({{ r.implementation.pct }}%){% endif %}</td></tr>
+      <tr><td>Steps overdue</td><td class="num{% if r.implementation.overdue %} bad{% endif %}">{{ r.implementation.overdue }}</td></tr>
+      <tr><td>Steps at risk</td><td class="num{% if r.implementation.at_risk %} bad{% endif %}">{{ r.implementation.at_risk }}</td></tr>
+      <tr><td>Awards without a CEDA officer</td><td class="num{% if r.implementation.unassigned %} bad{% endif %}">{{ r.implementation.unassigned }}</td></tr>
+    </tbody></table>
+    <p class="small"><a href="{% url 'ideas:implementation' %}">Open implementation tracking</a></p>
+  </section>
   <section class="card"><h3>Support desk</h3>
     <table class="table"><tbody>
       <tr><td>Tickets raised</td><td class="num">{{ r.support.total }}</td></tr>

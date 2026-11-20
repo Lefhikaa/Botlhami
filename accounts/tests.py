@@ -143,3 +143,20 @@ class OneTimeCodeTests(TestCase):
         first.refresh_from_db()
         self.assertFalse(first.usable)
         self.assertNotIn(code1, first.code_hash)  # stored hashed, never in plain text
+
+
+class PasswordResetEmailTests(TestCase):
+    def test_reset_email_shows_the_full_link_as_text_too(self):
+        """Spam folders switch off links, so the address must also be readable and copyable."""
+        User.objects.create_user(email="neo@x.bw", password="Pass-word-123", first_name="Neo", email_verified=True)
+        self.client.post(reverse("accounts:password_reset"), {"email": "neo@x.bw"}, secure=True)
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        url = re.search(r"https://testserver/accounts/password/reset/\S+/\S+/", msg.body).group(0)
+        html = msg.alternatives[0][0]
+        self.assertEqual(html.count(url), 2)  # once in the button, once as visible text
+        self.assertIn("Not spam", html)
+        # and the link works
+        r = self.client.get(url, secure=True, follow=True)
+        self.assertContains(r, "password")
+        self.assertIn("set-password", r.redirect_chain[-1][0])

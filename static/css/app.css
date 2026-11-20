@@ -430,3 +430,39 @@ main.home { flex: 1; width: 100%; }
 }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 #ecosystem { scroll-margin-top: 1rem; }
+.pw-wrap { position: relative; display: block; }
+.pw-wrap input { width: 100%; padding-right: 4.2rem; }
+.pw-toggle { position: absolute; top: 50%; right: .35rem; transform: translateY(-50%); border: 0; background: transparent; color: var(--brand); font: inherit; font-size: .85rem; font-weight: 700; padding: .35rem .55rem; border-radius: 6px; cursor: pointer; }
+.pw-toggle:hover { background: var(--page); }
+
+/* --- implementation plan --- */
+.plan { border-top: 3px solid var(--ok); }
+.plan-meter { text-align: right; }
+.plan-meter strong { display: block; font-size: 2rem; line-height: 1; color: var(--brand); }
+.plan-meter span { font-size: .8rem; color: var(--ink-muted); }
+.weave-progress { height: 10px; border-radius: 6px; background: var(--page); overflow: hidden; margin: .8rem 0 .9rem; }
+.weave-progress i { display: block; height: 100%; background: url("../img/weave-band.svg") repeat-x left center / auto 10px; border-radius: 6px; min-width: 6px; }
+.milestones { list-style: none; margin: .5rem 0 0; padding: 0; position: relative; }
+.milestones::before { content: ""; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: var(--line); }
+.ms { position: relative; padding: .55rem 0 .7rem 1.9rem; }
+.ms-dot { position: absolute; left: 0; top: .8rem; width: 16px; height: 16px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); }
+.ms-done .ms-dot { background: var(--ok); border-color: var(--ok); }
+.ms-in_progress .ms-dot { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 25%, white); }
+.ms-at_risk .ms-dot, .ms-overdue .ms-dot { border-color: var(--error); background: #f8e3e3; }
+.ms-head { display: grid; grid-template-columns: 1fr auto; gap: .5rem 1rem; align-items: start; }
+.ms-title { display: grid; gap: .1rem; }
+.ms-meta { display: grid; justify-items: end; gap: .15rem; text-align: right; }
+.ms-pill-planned { background: #ececea; color: #5d6064; }
+.ms-pill-in_progress { background: #e3edf8; color: #285f99; }
+.ms-pill-at_risk { background: #f8e3e3; color: var(--error); }
+.ms-pill-done { background: #e3f3ea; color: var(--ok); }
+.ms-update { margin: .35rem 0 0; padding: .45rem .7rem; background: var(--page); border-radius: 8px; }
+.ms-edit summary { cursor: pointer; color: var(--brand); font-weight: 600; margin-top: .35rem; }
+.ms-form { display: grid; gap: .5rem; margin-top: .5rem; max-width: 560px; }
+.ms-form select, .ms-form textarea { padding: .5rem; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.warn-text { color: #8a5410; }
+.next-steps { padding-left: 1.1rem; margin: .3rem 0 .8rem; }
+.next-steps li { margin: .2rem 0; }
+.mini-progress { width: 120px; height: 8px; background: var(--page); border-radius: 5px; overflow: hidden; margin-bottom: .2rem; }
+.mini-progress i { display: block; height: 100%; background: var(--ok); }
+@media (max-width: 700px) { .ms-head { grid-template-columns: 1fr; } .ms-meta { justify-items: start; text-align: left; } }

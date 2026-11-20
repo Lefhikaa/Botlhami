@@ -5,6 +5,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -14,8 +15,8 @@ from core.permissions import role_required
 
 from . import engine
 from . import services as svc
-from .forms import AwardForm, DecisionForm, EvaluationForm, IdeaForm, MessageForm, ReturnForm
-from .models import STAGES, Idea, IdeaDocument, Notification, Status, WorkflowSettings
+from .forms import AwardForm, DecisionForm, EvaluationForm, IdeaForm, MessageForm, MilestoneAddForm, MilestoneUpdateForm, ReturnForm
+from .models import STAGES, Award, Idea, IdeaDocument, Milestone, Notification, Status, WorkflowSettings
 
 User = get_user_model()
 
@@ -135,6 +136,16 @@ def detail(request, pk):
         ctx["gap"] = idea.score_gap()
     if user.has_role(*ENGINE_ROLES) and idea.status not in (Status.DRAFT, Status.SUBMITTED):
         ctx["engine"] = engine.analyse(idea)
+    award = getattr(idea, "award", None) if idea.status == Status.AWARDED else None
+    if award:
+        ctx["award"] = award
+        ctx["plan"] = award.milestones.select_related("updated_by", "confirmed_by")
+        ctx["plan_progress"] = award.progress()
+        ctx["plan_staff"] = svc.can_manage_implementation(user, award)
+        ctx["plan_applicant"] = user.pk == idea.submitter_id
+        ctx["milestone_statuses"] = Milestone.Status.choices
+        if ctx["plan_staff"]:
+            ctx["milestone_add_form"] = MilestoneAddForm()
     if full and user.pk != idea.submitter_id:
         record("idea.viewed", target=idea.reference)  # who opened whose IP, for the audit trail
     return render(request, "ideas/detail.html", ctx)
@@ -365,11 +376,64 @@ def award(request, pk):
         if not form.is_valid():
             raise svc.WorkflowError("Choose an award type and write a message to the applicant.")
         d = form.cleaned_data
-        svc.grant_award(idea, request.user, d["category"], d["message"], d.get("amount"))
-        messages.success(request, "Award granted.")
+        svc.grant_award(idea, request.user, d["category"], d["message"], d.get("amount"), d.get("officer"))
+        messages.success(request, "Award granted. A standard implementation plan has been set up; adjust it below if needed.")
     except svc.WorkflowError as e:
         _flash_error(request, e)
     return redirect("ideas:detail", pk=idea.pk)
+
+
+@require_POST
+@login_required
+def milestone_update(request, pk, mid):
+    idea = _get_visible(request, pk)
+    m = get_object_or_404(Milestone, pk=mid, award__idea=idea)
+    form = MilestoneUpdateForm(request.POST)
+    try:
+        if not form.is_valid():
+            raise svc.WorkflowError("Choose a status.")
+        if request.POST.get("action") == "confirm":
+            svc.confirm_milestone(m, request.user)
+            messages.success(request, f"Confirmed: {m.title}.")
+        else:
+            svc.update_milestone(m, request.user, form.cleaned_data["status"], form.cleaned_data["note"])
+            messages.success(request, f"Updated: {m.title}.")
+    except svc.WorkflowError as e:
+        _flash_error(request, e)
+    return redirect(f"{reverse('ideas:detail', args=[idea.pk])}#plan")
+
+
+@require_POST
+@login_required
+def milestone_add(request, pk):
+    idea = _get_visible(request, pk)
+    award = get_object_or_404(Award, idea=idea)
+    form = MilestoneAddForm(request.POST)
+    try:
+        if not form.is_valid():
+            raise svc.WorkflowError("Give the milestone a title and a due date.")
+        d = form.cleaned_data
+        svc.add_milestone(award, request.user, d["title"], d["due_date"], d["description"])
+        messages.success(request, "Milestone added.")
+    except svc.WorkflowError as e:
+        _flash_error(request, e)
+    return redirect(f"{reverse('ideas:detail', args=[idea.pk])}#plan")
+
+
+@role_required(Role.ADMIN, Role.ADJUDICATOR, Role.OBSERVER, Role.CONSULTANT)
+def implementation(request):
+    """Every awarded idea and how its implementation is going."""
+    awards = Award.objects.select_related("idea", "officer").prefetch_related("milestones").order_by("-granted_at")
+    if request.user.role == Role.CONSULTANT:
+        awards = awards.filter(officer=request.user)
+    rows = [(a, a.progress()) for a in awards]
+    totals = {
+        "awards": len(rows),
+        "done": sum(p["done"] for _, p in rows), "total": sum(p["total"] for _, p in rows),
+        "overdue": sum(p["overdue"] for _, p in rows), "at_risk": sum(p["at_risk"] for _, p in rows),
+        "waiting": sum(1 for a, _ in rows for m in a.milestones.all() if m.awaiting_confirmation),
+    }
+    return render(request, "ideas/implementation.html", {"rows": rows, "totals": totals})
 
 
 # --- pipeline and notifications --------------------------------------------

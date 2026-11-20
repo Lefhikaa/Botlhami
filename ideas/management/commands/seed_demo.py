@@ -124,12 +124,36 @@ class Command(BaseCommand):
                 svc.submit_evaluation(idea, users[ev], scores, comment, rec, coi_declared=True)
             if stage == "awarded":
                 svc.decide(idea, adj, Status.APPROVED, "Strong pilot evidence and clear job creation.")
-                svc.grant_award(idea, adj, "seed", "Referred to CEDA financing with incubation support.", 250000)
+                svc.grant_award(idea, adj, "seed", "Referred to CEDA financing with incubation support.", 250000, officer=users["kabo"])
             elif stage == "revision":
                 svc.decide(idea, adj, Status.REVISION, "Add a seasonal sourcing plan and a cost-per-unit estimate, then resubmit.")
         for n, idea in enumerate(Idea.objects.order_by("pk")):
             self.backdate(idea, start_days_ago=[48, 36, 20, 2, 15, 12, 10][n % 7])
+        self.demo_progress(users)
         self.stdout.write(self.style.SUCCESS(f"Created {len(PEOPLE)} demo users and {len(IDEAS)} ideas."))
+
+    @staticmethod
+    def demo_progress(users):
+        """Date the demo award's plan from its (backdated) award and show some progress."""
+        from ideas.models import Award, Milestone
+        for award in Award.objects.filter(idea__submitter__email__endswith="@demo.botlhami.bw"):
+            granted = award.idea.history.filter(to_status=Status.AWARDED).order_by("-at").first().at
+            Award.objects.filter(pk=award.pk).update(granted_at=granted)
+            plan = list(award.milestones.all())
+            for m, days in zip(plan, [14, 30, 45, 60, 90, 180, 365]):
+                m.due_date = (granted + timedelta(days=days)).date()
+            kabo, neo = users["kabo"], award.idea.submitter
+            updates = [
+                (Milestone.Status.DONE, "Accepted. Thank you, CEDA!", neo, True, 3),
+                (Milestone.Status.DONE, "Met Kabo at CEDA Gaborone. Monthly reports agreed.", neo, True, 12),
+                (Milestone.Status.IN_PROGRESS, "Financing application drafted; waiting for two supplier quotes for the cold rooms.", neo, False, 25),
+            ]
+            for m, (status, note, who, confirmed, after) in zip(plan, updates):
+                m.status, m.update, m.updated_by = status, note, who
+                m.updated_at = granted + timedelta(days=after)
+                if confirmed:
+                    m.confirmed_by, m.confirmed_at = kabo, granted + timedelta(days=after + 1)
+            Milestone.objects.bulk_update(plan, ["due_date", "status", "update", "updated_by", "updated_at", "confirmed_by", "confirmed_at"])
 
     @staticmethod
     def backdate(idea, start_days_ago):

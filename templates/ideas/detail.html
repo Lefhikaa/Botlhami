@@ -9,6 +9,7 @@
 
 <div class="detail">
   <div class="stack">
+    {% if award %}{% include "ideas/_plan.html" %}{% endif %}
     <section class="card">
       <h2>Idea</h2>
       {% if full %}
@@ -74,7 +75,20 @@
     {% if user.pk == idea.submitter_id %}
       {% if idea.status == "draft" %}<section class="card"><h3>Draft</h3><p class="small muted">Only you can see this draft.</p><a class="btn btn-primary" href="{% url 'ideas:edit' idea.pk %}">Continue editing</a></section>{% endif %}
       {% if idea.status == "revision" %}<section class="card warn"><h3>Action needed</h3><p class="small">{{ idea.history.last.note }}</p><a class="btn btn-primary" href="{% url 'ideas:edit' idea.pk %}">Revise and resubmit</a></section>{% endif %}
-      {% if idea.status == "awarded" %}<section class="card ok-card"><h3>🏆 {{ idea.award.get_category_display }}</h3><p class="small">{{ idea.award.message }}</p></section>{% endif %}
+      {% if idea.status == "awarded" %}<section class="card ok-card"><h3>🏆 {{ idea.award.get_category_display }}</h3>
+        {% if idea.award.amount %}<p class="small"><strong>Value:</strong> P{{ idea.award.amount|floatformat:"0g" }}</p>{% endif %}
+        <p class="small">{{ idea.award.message }}</p>
+        <h3 class="mt">What happens next</h3>
+        {% if plan_progress.done == 0 %}
+        <ol class="small next-steps">
+          <li>Accept the award: mark the first step of your plan as done.</li>
+          <li>{% if idea.award.officer %}{{ idea.award.officer.first_name }}, your CEDA officer,{% else %}A CEDA officer{% endif %} will contact you to arrange onboarding.</li>
+          <li>Report progress on each step of the plan. CEDA confirms each one, and you'll get an alert when they do.</li>
+        </ol>
+        {% elif plan_progress.next %}
+        <p class="small"><strong>Your next step:</strong> {{ plan_progress.next.title }}, due {{ plan_progress.next.due_date|date:"j M Y" }}.{% if plan_progress.next.overdue %} <span class="bad">This is overdue: update your officer.</span>{% endif %}</p>
+        {% else %}<p class="small ok">✓ Every step of your plan is done. Well done!</p>{% endif %}
+        <a class="btn btn-sm btn-primary" href="#plan">Open my plan</a></section>{% endif %}
       {% if idea.status == "rejected" %}<section class="card"><h3>Outcome</h3><p class="small">{{ idea.history.last.note }}</p></section>{% endif %}
     {% endif %}
 

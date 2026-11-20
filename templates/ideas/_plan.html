@@ -1,0 +1,40 @@
+<section class="card plan" id="plan">
+  <div class="spread"><div><h2>Implementation plan</h2>
+    <p class="small muted">After the award: the steps to turn the idea into a working solution. {% if plan_applicant %}Update each step as you go; your CEDA officer confirms it.{% else %}The applicant reports progress; CEDA confirms each step.{% endif %}</p></div>
+    <div class="plan-meter" role="img" aria-label="{{ plan_progress.done }} of {{ plan_progress.total }} steps done"><strong>{{ plan_progress.pct }}%</strong><span>{{ plan_progress.done }} of {{ plan_progress.total }} done</span></div></div>
+  <div class="weave-progress" aria-hidden="true"><i style="width: {{ plan_progress.pct }}%"></i></div>
+  <p class="small"><strong>CEDA officer:</strong> {% if award.officer %}{{ award.officer.first_name }} {{ award.officer.last_name }} · <a href="mailto:{{ award.officer.email }}">{{ award.officer.email }}</a>{% else %}<span class="muted">to be assigned</span>{% endif %}</p>
+  <ol class="milestones">
+  {% for m in plan %}
+    <li class="ms ms-{{ m.status }}{% if m.overdue %} ms-overdue{% endif %}">
+      <div class="ms-head">
+        <span class="ms-dot" aria-hidden="true"></span>
+        <div class="ms-title"><strong>{{ m.title }}</strong>{% if m.description %}<span class="small muted">{{ m.description }}</span>{% endif %}</div>
+        <div class="ms-meta"><span class="pill ms-pill-{{ m.status }}">{{ m.get_status_display }}</span>
+          <span class="small{% if m.overdue %} bad{% else %} muted{% endif %}">{% if m.overdue %}Overdue since{% else %}Due{% endif %} {{ m.due_date|date:"j M Y" }}</span>
+          {% if m.confirmed_at %}<span class="small ok">✓ Confirmed by CEDA</span>{% elif m.awaiting_confirmation %}<span class="small warn-text">Waiting for CEDA to confirm</span>{% endif %}</div>
+      </div>
+      {% if m.update %}<p class="ms-update small">“{{ m.update }}” <span class="muted">— {{ m.updated_by.first_name|default:"" }}, {{ m.updated_at|date:"j M" }}</span></p>{% endif %}
+      {% if plan_applicant or plan_staff %}
+      <details class="ms-edit"><summary class="small">Update this step</summary>
+        <form method="post" action="{% url 'ideas:milestone_update' idea.pk m.pk %}" class="ms-form">{% csrf_token %}
+          <label class="sr" for="st{{ m.pk }}">Status</label>
+          <select id="st{{ m.pk }}" name="status">{% for v, l in milestone_statuses %}<option value="{{ v }}"{% if v == m.status %} selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+          <label class="sr" for="nt{{ m.pk }}">Update</label>
+          <textarea id="nt{{ m.pk }}" name="note" rows="2" placeholder="What's happened, and anything you need from CEDA"></textarea>
+          <div class="row"><button class="btn btn-sm btn-primary">Save update</button>
+          {% if plan_staff and m.awaiting_confirmation %}<button class="btn btn-sm btn-ok" name="action" value="confirm">Confirm done</button>{% endif %}</div>
+        </form>
+      </details>{% endif %}
+    </li>
+  {% endfor %}
+  </ol>
+  {% if milestone_add_form %}
+  <details class="ms-edit mt"><summary class="small">Add a milestone</summary>
+    <form method="post" action="{% url 'ideas:milestone_add' idea.pk %}" class="grid2 mt">{% csrf_token %}
+      {% include "_field.html" with field=milestone_add_form.title %}{% include "_field.html" with field=milestone_add_form.due_date %}
+      {% include "_field.html" with field=milestone_add_form.description %}
+      <div class="row end"><button class="btn btn-sm btn-primary">Add milestone</button></div>
+    </form>
+  </details>{% endif %}
+</section>

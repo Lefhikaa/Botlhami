@@ -8,7 +8,7 @@ from django.db.models import Count, Sum
 from django.utils import timezone
 
 from accounts.models import Role
-from ideas.models import LOCATIONS, SECTORS, Assignment, Award, Evaluation, Idea, StatusEvent, Status, WorkflowSettings
+from ideas.models import LOCATIONS, SECTORS, Assignment, Award, Evaluation, Idea, Milestone, StatusEvent, Status, WorkflowSettings
 from support.models import Ticket
 
 User = get_user_model()
@@ -130,7 +130,18 @@ def dashboard(days=90):
         "by_level": list(tickets.values("level__label").annotate(n=Count("id")).order_by("level__order")),
     }
 
+    # Implementation after the award (all awards, whatever the period: plans run for a year)
+    ms = list(Milestone.objects.select_related("award"))
+    implementation = {
+        "awards": Award.objects.count(),
+        "done": sum(1 for m in ms if m.status == Milestone.Status.DONE), "total": len(ms),
+        "overdue": sum(1 for m in ms if m.overdue), "at_risk": sum(1 for m in ms if m.status == Milestone.Status.AT_RISK),
+        "unassigned": Award.objects.filter(officer__isnull=True).count(),
+    }
+    implementation["pct"] = _pct(implementation["done"], implementation["total"])
+
     return {
+        "implementation": implementation,
         "days": days, "period_label": PERIODS.get(days, PERIODS[90]), "periods": PERIODS,
         "kpi": {
             "new_applicants": new_applicants.count(), "applicants_total": applicants.count(),
