@@ -1,4 +1,4 @@
-{% load static %}<!DOCTYPE html>
+{% load static brand %}<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -12,8 +12,62 @@
   <script src="{% static 'js/confirm.js' %}" defer></script>
   <script src="{% static 'js/password-toggle.js' %}" defer></script>
 </head>
-<body>
+<body class="{% if nav_sections %}has-sidebar{% endif %}">
   <a class="skip" href="#main">Skip to content</a>
+{% if nav_sections %}
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="sb-head">
+      <a class="brand" href="{% url 'core:dashboard' %}" aria-label="{{ SITE_NAME }} home">
+        <img class="brand-mark" src="{% static 'img/botlhami-mark.svg' %}" alt="" width="34" height="34">
+        <span class="brand-name">{{ SITE_NAME }}</span>
+      </a>
+      <button type="button" class="sb-collapse" id="sb-collapse" aria-label="Collapse the menu" aria-controls="sidebar" aria-expanded="true">{% icon "sidebar" %}</button>
+    </div>
+    <form class="sb-search" method="get" action="{% url 'core:search' %}" role="search">
+      {% icon "search" 18 %}<label class="sr" for="sb-q">Search</label>
+      <input id="sb-q" name="q" placeholder="Search" autocomplete="off" value="{% if request.resolver_match.url_name == 'search' %}{{ request.GET.q }}{% endif %}">
+      <span class="kbd" aria-hidden="true"><kbd id="kbd-mod">Ctrl</kbd><kbd>K</kbd></span>
+    </form>
+    <nav class="sb-nav">
+      {% for title, items in nav_sections %}
+      <p class="sb-label">{{ title }}</p>
+      <ul>{% for i in items %}
+        <li><a class="sb-item{% if i.active %} active{% endif %}" href="{{ i.url }}"{% if i.active %} aria-current="page"{% endif %} title="{{ i.label }}">{% icon i.icon %}<span class="lbl">{{ i.label }}</span>{% if i.count %}<span class="count" aria-label="{{ i.count }} waiting">{{ i.count }}</span>{% endif %}</a></li>
+      {% endfor %}</ul>
+      {% endfor %}
+      <p class="sb-label">General</p>
+      <ul>
+        <li><a class="sb-item{% if request.resolver_match.url_name == 'notifications' %} active{% endif %}" href="{% url 'ideas:notifications' %}" title="Notifications">{% icon "bell" %}<span class="lbl">Notifications</span>{% if unread_count %}<span class="count count-hot" aria-label="{{ unread_count }} unread">{{ unread_count }}</span>{% endif %}</a></li>
+        <li><a class="sb-item{% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name in 'profile identity password_change' %} active{% endif %}" href="{% url 'accounts:profile' %}" title="Profile and security">{% icon "user" %}<span class="lbl">Profile and security</span></a></li>
+        {% if user.role != "submitter" %}<li><a class="sb-item" href="{% url 'support:help' %}" title="Help centre">{% icon "help" %}<span class="lbl">Help centre</span></a></li>{% endif %}
+        <li><button type="button" id="theme-toggle" class="sb-item" title="Dark mode">{% icon "moon" %}<span class="lbl">Dark mode</span><span class="switch" aria-hidden="true"></span></button></li>
+        <li><form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="sb-item" title="Sign out">{% icon "logout" %}<span class="lbl">Sign out</span></button></form></li>
+      </ul>
+    </nav>
+    <div class="sb-foot">
+      {% if user.role == "submitter" %}
+      <div class="sb-card">
+        <span class="sb-card-mark">{% icon "chat" %}</span>
+        <div><strong>Stuck on something?</strong><span>The Botlhami Assistant answers straight away.</span></div>
+        <a class="btn btn-primary btn-block" href="{% url 'chat:client' %}">Ask a question</a>
+      </div>
+      {% endif %}
+      <a class="sb-user" href="{% url 'accounts:profile' %}" title="{{ user.get_full_name|default:user.email }}">
+        <span class="avatar" aria-hidden="true">{{ user.first_name|slice:":1"|default:user.email|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}</span>
+        <span class="lbl"><strong>{{ user.get_full_name|default:user.email }}</strong><span>{{ user.get_role_display }}</span></span>
+      </a>
+      <div class="sb-partner lbl"><span>In partnership with</span><img class="ceda-logo" src="{% static 'img/ceda-logo.png' %}" alt="CEDA" width="56" height="30"></div>
+    </div>
+  </aside>
+  <div class="sb-scrim" id="sb-scrim" hidden></div>
+  <div class="shell">
+    <header class="mobilebar">
+      <button type="button" class="sb-open" id="sb-open" aria-label="Open the menu" aria-controls="sidebar" aria-expanded="false">{% icon "menu" 22 %}</button>
+      <a class="brand" href="{% url 'core:dashboard' %}"><img class="brand-mark" src="{% static 'img/botlhami-mark.svg' %}" alt="" width="30" height="30"><span class="brand-name">{{ SITE_NAME }}</span></a>
+      <a class="mb-bell" href="{% url 'ideas:notifications' %}" aria-label="Notifications">{% icon "bell" 22 %}{% if unread_count %}<span class="count count-hot">{{ unread_count }}</span>{% endif %}</a>
+    </header>
+    <div class="weave-band" aria-hidden="true"></div>
+{% else %}
   <header class="topbar">
     <div class="topbar-left">
       <a class="brand" href="{% url 'core:home' %}" aria-label="{{ SITE_NAME }} home">
@@ -46,6 +100,7 @@
     </nav>
   </header>
   <div class="weave-band" aria-hidden="true"></div>
+{% endif %}
   <main id="main" class="{% block main_class %}container{% endblock %}">
     {% if messages %}
       <div class="messages" role="status">
@@ -54,11 +109,21 @@
     {% endif %}
     {% block content %}{% endblock %}
   </main>
+{% if nav_sections %}
+  <footer class="footer">
+    <span>&copy; {% now "Y" %} {{ SITE_NAME }}, in partnership with CEDA</span>
+    <span><a href="{% url 'support:help' %}">Help centre</a> · <a href="{% url 'support:documents' %}">Forms and documents</a> · <a href="{% url 'support:sla' %}">Service levels</a></span>
+    <span>Personal data is handled under Botswana's Data Protection Act, 2024.</span>
+  </footer>
+  </div>
+  <script src="{% static 'js/nav.js' %}" defer></script>
+{% else %}
   {% if not user.is_authenticated or user.role == "submitter" %}{% if request.resolver_match.app_name != "chat" %}<a class="btn btn-primary chat-fab" href="{% url 'chat:client' %}">💬 Chat with CEDA</a>{% endif %}{% endif %}
   <footer class="footer">
     <span class="footer-partner">&copy; {% now "Y" %} {{ SITE_NAME }}, in partnership with <img class="ceda-logo" src="{% static 'img/ceda-logo-tagline.png' %}" alt="CEDA: Finance, Develop, Sustain" width="56" height="34"></span>
     <span><a href="{% url 'support:help' %}">Help centre</a> · <a href="{% url 'support:documents' %}">Forms and documents</a> · <a href="{% url 'support:sla' %}">Service levels</a></span>
     <span>Personal data is handled under Botswana's Data Protection Act, 2024.</span>
   </footer>
+{% endif %}
 </body>
 </html>

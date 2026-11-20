@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% block title %}Search{% endblock %}
+{% block content %}
+<h1>Search</h1>
+<form method="get" action="{% url 'core:search' %}" class="search-page row">
+  <label class="sr" for="search-page-q">Search</label>
+  <input id="search-page-q" name="q" value="{{ q }}" placeholder="An idea's name or reference, or a question" autofocus>
+  <button class="btn btn-primary">Search</button>
+</form>
+{% if q %}
+  {% if not ideas and not faqs and not docs %}
+    <div class="card mt"><p>Nothing matches “{{ q }}”. Try fewer words, an idea reference such as IDX-2026-0005, or <a href="{% url 'chat:client' %}">ask the Botlhami Assistant</a>.</p></div>
+  {% endif %}
+  {% if ideas %}<section class="card mt"><h2>Ideas</h2>
+    <table class="table"><tbody>{% for i in ideas %}<tr><td><a href="{% url 'ideas:detail' i.pk %}"><strong>{{ i.title }}</strong></a><br><span class="small muted">{{ i.reference|default:"Draft" }}{% if i.sector %} · {{ i.sector }}{% endif %}</span></td><td class="num"><span class="pill s-{{ i.status }}">{{ i.get_status_display }}</span></td></tr>{% endfor %}</tbody></table></section>{% endif %}
+  {% if faqs %}<section class="card mt"><h2>Questions and answers</h2>
+    <ul class="plain-list">{% for f in faqs %}<li><a href="{% url 'support:help' %}?q={{ q|urlencode }}">{{ f.question }}</a></li>{% endfor %}</ul></section>{% endif %}
+  {% if docs %}<section class="card mt"><h2>Forms and documents</h2>
+    <ul class="plain-list">{% for d in docs %}<li><a href="{% url 'support:documents' %}">{{ d.title }}</a>{% if d.description %}<br><span class="small muted">{{ d.description|truncatechars:120 }}</span>{% endif %}</li>{% endfor %}</ul></section>{% endif %}
+{% endif %}
+{% endblock %}

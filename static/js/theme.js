@@ -8,6 +8,8 @@
   const system = () => (media && media.matches ? "dark" : "light");
   const apply = (t) => { root.dataset.theme = t; };
   apply(saved === "dark" || saved === "light" ? saved : system());
+  // Restore a collapsed sidebar before the first paint, too.
+  try { if (localStorage.getItem("botlhami-sidebar") === "collapsed") root.dataset.sidebar = "collapsed"; } catch (e) { /* storage blocked */ }
   if (media && media.addEventListener) {
     media.addEventListener("change", () => { if (!saved) { apply(system()); label(); } });
   }
@@ -17,6 +19,7 @@
     const dark = root.dataset.theme === "dark";
     b.setAttribute("aria-pressed", String(dark));
     b.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+    if (b.querySelector(".lbl")) return; // the sidebar switch shows its state with aria-pressed
     b.title = dark ? "Light mode" : "Dark mode";
     b.querySelector("span").textContent = dark ? "☀" : "☾";
   }

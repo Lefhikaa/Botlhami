@@ -57,3 +57,35 @@ def health(request):
 
 def denied(request, exception=None):
     return render(request, "403.html", status=403)
+
+
+@login_required
+def search(request):
+    """The sidebar search: ideas this person may open, plus help content."""
+    from django.db.models import Q as Q_
+
+    from accounts.models import Role
+    from ideas.models import Award, Idea, Status
+    from support.models import FAQ, Resource
+
+    q = request.GET.get("q", "").strip()[:100]
+    ideas, faqs, docs = [], [], []
+    if q:
+        u = request.user
+        found = Idea.objects.filter(Q_(title__icontains=q) | Q_(reference__icontains=q) | Q_(sector__icontains=q))
+        if u.has_role(Role.ADMIN, Role.ADJUDICATOR):
+            pass
+        elif u.role == Role.OBSERVER:
+            found = found.exclude(status=Status.DRAFT)
+        elif u.role == Role.SUBMITTER:
+            found = found.filter(submitter=u)
+        elif u.role == Role.EVALUATOR:
+            found = found.filter(assignments__evaluator=u)
+        elif u.role == Role.CONSULTANT:
+            found = found.filter(pk__in=Award.objects.filter(officer=u).values("idea"))
+        else:
+            found = found.none()
+        ideas = list(found.distinct().order_by("-updated_at")[:20])
+        faqs = list(FAQ.objects.filter(published=True).filter(Q_(question__icontains=q) | Q_(answer__icontains=q))[:10])
+        docs = list(Resource.objects.filter(published=True).filter(Q_(title__icontains=q) | Q_(description__icontains=q))[:10])
+    return render(request, "core/search.html", {"q": q, "ideas": ideas, "faqs": faqs, "docs": docs})

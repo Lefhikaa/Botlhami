@@ -82,3 +82,47 @@ class HomePageTests(TestCase):
         self.assertContains(r, "Where ideas become innovation.")
         self.assertEqual(r.context["stats"], {"submitted": 2, "review": 1, "approved": 1, "awarded": 1, "jobs": 9})
         self.assertContains(r, "expect to create 9 jobs")
+
+
+class SidebarTests(TestCase):
+    def setUp(self):
+        from accounts.models import Role, User
+        self.Role, self.User = Role, User
+
+    def login(self, role):
+        u = self.User.objects.create_user(email=f"{role}@example.com", password="x-Pass-12345", role=role,
+                                          first_name="Test", last_name="Person", email_verified=True)
+        self.client.force_login(u)
+        return u
+
+    def test_guests_get_the_public_header(self):
+        r = self.client.get(reverse("support:help"))
+        self.assertNotContains(r, 'id="sidebar"')
+        self.assertContains(r, "Register")
+
+    def test_menu_follows_the_role(self):
+        self.login(self.Role.SUBMITTER)
+        r = self.client.get(reverse("ideas:mine"))
+        self.assertContains(r, 'id="sidebar"')
+        self.assertContains(r, "Submit an idea")
+        self.assertNotContains(r, "Adjudication")
+        self.assertContains(r, 'class="sb-item active" href="/ideas/mine/"')
+
+    def test_admin_sees_counts(self):
+        from ideas.models import Idea, Status
+        self.login(self.Role.ADMIN)
+        sub = self.User.objects.create_user(email="s@example.com", password="x-Pass-12345", role=self.Role.SUBMITTER)
+        Idea.objects.create(submitter=sub, title="Waiting idea", status=Status.SUBMITTED)
+        r = self.client.get(reverse("ideas:screening"))
+        self.assertContains(r, "ID checks")
+        self.assertContains(r, '<span class="count" aria-label="1 waiting">1</span>', html=False)
+
+    def test_search_only_finds_ideas_you_may_open(self):
+        from ideas.models import Idea
+        me = self.login(self.Role.SUBMITTER)
+        other = self.User.objects.create_user(email="o@example.com", password="x-Pass-12345", role=self.Role.SUBMITTER)
+        Idea.objects.create(submitter=me, title="Solar dryer mine")
+        Idea.objects.create(submitter=other, title="Solar dryer theirs")
+        r = self.client.get(reverse("core:search"), {"q": "solar dryer"})
+        self.assertContains(r, "Solar dryer mine")
+        self.assertNotContains(r, "Solar dryer theirs")
