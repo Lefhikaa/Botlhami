@@ -466,3 +466,9 @@ main.home { flex: 1; width: 100%; }
 .mini-progress { width: 120px; height: 8px; background: var(--page); border-radius: 5px; overflow: hidden; margin-bottom: .2rem; }
 .mini-progress i { display: block; height: 100%; background: var(--ok); }
 @media (max-width: 700px) { .ms-head { grid-template-columns: 1fr; } .ms-meta { justify-items: start; text-align: left; } }
+.crit textarea { width: 100%; margin-top: .5rem; padding: .5rem .6rem; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: .9rem; }
+.crit-n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--sorghum); color: var(--ink); font-size: .75rem; font-weight: 800; margin-right: .25rem; }
+.table.compact td { padding: .3rem .4rem; }
+.cat-comments { margin: .3rem 0 0; }
+.cat-comments dt { font-weight: 700; margin-top: .6rem; }
+.cat-comments dd { margin: .15rem 0 0 0; font-size: .9rem; }

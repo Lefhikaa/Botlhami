@@ -43,7 +43,7 @@ class IdeaForm(forms.ModelForm):
         fields = [
             "title", "sector", "maturity", "location", "problem", "solution",
             "beneficiaries", "impact", "jobs", "budget", "sdgs", "team",
-            "capacity_skills", "capacity_resources", "capacity_partners", "capacity_gaps", "ip_declared",
+            "capacity_skills", "capacity_resources", "capacity_partners", "capacity_gaps", "capacity_governance", "ip_declared",
         ]
         labels = {
             "title": "Idea title", "problem": "What problem does it solve?", "solution": "Your solution",
@@ -60,12 +60,14 @@ class IdeaForm(forms.ModelForm):
             "capacity_resources": "What you already have: premises, equipment, a working prototype, customers, or money you'll put in yourself.",
             "capacity_partners": "Optional. Suppliers, institutions, mentors or buyers you're working with, and whether it's agreed or still a plan.",
             "capacity_gaps": "Optional. What's still missing, such as a skill, licence or piece of equipment, and how you'll get it.",
+            "capacity_governance": "Optional. Who makes decisions, how money is managed and records kept, and any board, advisers or mentors.",
         }
         widgets = {
             "problem": forms.Textarea(attrs={"rows": 4}), "solution": forms.Textarea(attrs={"rows": 4}),
             "impact": forms.Textarea(attrs={"rows": 3}), "team": forms.Textarea(attrs={"rows": 3}),
             "capacity_skills": forms.Textarea(attrs={"rows": 3}), "capacity_resources": forms.Textarea(attrs={"rows": 3}),
             "capacity_partners": forms.Textarea(attrs={"rows": 2}), "capacity_gaps": forms.Textarea(attrs={"rows": 2}),
+            "capacity_governance": forms.Textarea(attrs={"rows": 2}),
         }
 
     MANDATORY = {"title", "sector", "maturity", "location", "problem", "solution", "beneficiaries", "impact", "jobs", "budget", "sdgs", "team",
@@ -93,9 +95,17 @@ class EvaluationForm(forms.Form):
             self.fields[f"score_{c.pk}"] = forms.TypedChoiceField(
                 label=c.name, help_text=c.guidance, choices=self.LEVELS, coerce=int, widget=forms.RadioSelect,
             )
+            self.fields[f"note_{c.pk}"] = forms.CharField(
+                label=f"Comment on {c.name.lower()} (optional)", required=False, max_length=1000,
+                widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Why this score? Shared with the applicant anonymously."}),
+            )
 
     def score_fields(self):
-        return [(c, self[f"score_{c.pk}"]) for c in self.criteria]
+        return [(c, self[f"score_{c.pk}"], self[f"note_{c.pk}"]) for c in self.criteria]
+
+    def notes(self):
+        return {str(c.pk): self.cleaned_data.get(f"note_{c.pk}", "").strip() for c in self.criteria
+                if self.cleaned_data.get(f"note_{c.pk}", "").strip()}
 
     def scores(self):
         return {str(c.pk): self.cleaned_data.get(f"score_{c.pk}") for c in self.criteria}

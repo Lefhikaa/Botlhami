@@ -22,11 +22,12 @@
     <div class="field"><span class="label">{{ form.sdgs.label }} <span class="req">*</span></span><div class="checks">{% for cb in form.sdgs %}<label class="check">{{ cb.tag }} <span>{{ cb.choice_label }}</span></label>{% endfor %}</div></div>
   </fieldset>
   <fieldset><legend>3. Team and implementation capacity</legend>
-    <p class="small muted">Can you deliver it? Evaluators score this as part of "Feasibility and implementation capacity".</p>
+    <p class="small muted">Can you deliver it? Evaluators score this under "Implementation capacity, team capability and governance".</p>
     {% include "_field.html" with field=form.team %}
     {% include "_field.html" with field=form.capacity_skills %}
     {% include "_field.html" with field=form.capacity_resources %}
     <div class="grid2">{% include "_field.html" with field=form.capacity_partners %}{% include "_field.html" with field=form.capacity_gaps %}</div>
+    {% include "_field.html" with field=form.capacity_governance %}
   </fieldset>
   <fieldset><legend>4. Supporting documents</legend>
     {% include "_field.html" with field=form.documents %}

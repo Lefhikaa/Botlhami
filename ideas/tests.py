@@ -235,5 +235,5 @@ class CapacityTests(TestCase):
         missing = idea.missing_items()
         self.assertIn("Skills and experience", missing)
         self.assertIn("Resources in place", missing)
-        self.assertTrue(Criterion.objects.filter(name="Feasibility and implementation capacity", weight=15, active=True).exists())
+        self.assertTrue(Criterion.objects.filter(name="Implementation capacity, team capability and governance", weight=15, active=True).exists())
         self.assertEqual(sum(Criterion.objects.filter(active=True).values_list("weight", flat=True)), 100)

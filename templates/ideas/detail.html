@@ -27,6 +27,7 @@
         <dt>Resources in place</dt><dd>{{ idea.capacity_resources|linebreaksbr|default:"—" }}</dd>
         <dt>Partners and suppliers</dt><dd>{{ idea.capacity_partners|linebreaksbr|default:"—" }}</dd>
         <dt>Gaps and plans</dt><dd>{{ idea.capacity_gaps|linebreaksbr|default:"—" }}</dd>
+        <dt>Governance</dt><dd>{{ idea.capacity_governance|linebreaksbr|default:"—" }}</dd>
         <dt>Documents</dt><dd>{% for d in idea.documents.all %}<a class="tag" href="{% url 'ideas:document' idea.pk d.pk %}">📎 {{ d.original_name }}</a> {% empty %}—{% endfor %}</dd>
       </dl>
       {% else %}
@@ -53,7 +54,8 @@
     <section class="card">
       <h2>Evaluator feedback</h2>
       <p class="muted small">Evaluators stay anonymous. Feedback appears once each review round is complete.</p>
-      {% for e in feedback %}<div class="msg"><p class="small muted">Evaluator {{ forloop.counter }} · round {{ e.round }} · recommends {{ e.get_recommendation_display }}</p>{{ e.comment }}</div>{% endfor %}
+      {% for e in feedback %}<div class="msg"><p class="small muted">Evaluator {{ forloop.counter }} · round {{ e.round }} · recommends {{ e.get_recommendation_display }}</p>{{ e.comment }}
+        <details class="mt-s"><summary class="small">Scores by category</summary><table class="table compact"><tbody>{% for name, score, note in e.breakdown %}<tr><td>{{ name }}</td><td class="num"><strong>{{ score }}</strong>/5</td><td class="small">{{ note }}</td></tr>{% endfor %}</tbody></table></details></div>{% endfor %}
     </section>
     {% endif %}
 
@@ -124,9 +126,11 @@
       <h3>Your evaluation</h3>
       {% include "_field.html" with field=eval_form.coi_declared %}
       <p class="small muted">Have a conflict? <button class="linklike" form="recuse-form">Recuse yourself</button>.</p>
-      {% for c, f in eval_form.score_fields %}
-      <fieldset class="crit"><legend>{{ c.name }} <span class="muted small">· {{ c.weight }}%</span></legend><p class="small muted">{{ c.guidance }}</p>
+      <p class="small muted">Score each category from 1 (Poor) to 5 (Excellent). A comment on each is optional but helps the applicant.</p>
+      {% for c, f, n in eval_form.score_fields %}
+      <fieldset class="crit"><legend><span class="crit-n">{{ forloop.counter }}</span> {{ c.name }} <span class="muted small">· {{ c.weight }}%</span></legend><p class="small muted">{{ c.guidance }}</p>
         <div class="scale">{% for r in f %}<label>{{ r.tag }}<b>{{ r.data.value }}</b>{{ r.choice_label }}</label>{% endfor %}</div>
+        <label class="sr" for="{{ n.id_for_label }}">{{ n.label }}</label>{{ n }}
       </fieldset>
       {% endfor %}
       {% include "_field.html" with field=eval_form.comment %}

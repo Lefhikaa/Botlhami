@@ -251,7 +251,7 @@ def evaluate(request, pk):
     try:
         svc.submit_evaluation(
             idea, request.user, form.scores(), form.cleaned_data["comment"], form.cleaned_data["recommendation"],
-            form.cleaned_data["private_note"], form.cleaned_data["coi_declared"],
+            form.cleaned_data["private_note"], form.cleaned_data["coi_declared"], notes=form.notes(),
         )
     except svc.WorkflowError as e:
         _flash_error(request, e)
@@ -295,6 +295,11 @@ def score_report(request, pk):
         if len(a.evaluations) > 1:
             ctx["legend"].append(("Average", engine.INK, True))
         ctx["rows"] = [(c, [e.scores.get(c.id) for e in a.evaluations]) for c in a.criteria]
+        ctx["comments"] = [
+            (c, [(letter, (e.notes or {}).get(c.id)) for letter, e in zip(a.letters, a.evaluations) if (e.notes or {}).get(c.id)])
+            for c in a.criteria
+        ]
+        ctx["has_comments"] = any(notes for _, notes in ctx["comments"])
     if idea.status == Status.ADJUDICATION:
         assigned = idea.assignments.filter(round=idea.round).values_list("evaluator_id", flat=True)
         ctx["spare_evaluators"] = User.objects.filter(role=Role.EVALUATOR, is_active=True).exclude(pk__in=assigned)

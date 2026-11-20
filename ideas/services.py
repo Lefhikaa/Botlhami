@@ -143,7 +143,7 @@ def active_criteria():
 
 
 @transaction.atomic
-def submit_evaluation(idea, evaluator, scores, comment, recommendation, private_note="", coi_declared=False):
+def submit_evaluation(idea, evaluator, scores, comment, recommendation, private_note="", coi_declared=False, notes=None):
     if idea.status != Status.IN_REVIEW or not idea.active_assignments().filter(evaluator=evaluator).exists():
         raise WorkflowError("You aren't assigned to this idea, or it isn't under evaluation.")
     if idea.round_evaluations().filter(evaluator=evaluator).exists():
@@ -162,6 +162,7 @@ def submit_evaluation(idea, evaluator, scores, comment, recommendation, private_
         raise WorkflowError("Write at least 20 characters of feedback for the applicant.")
     ev = Evaluation.objects.create(
         idea=idea, evaluator=evaluator, round=idea.round, rubric=rubric, scores=clean,
+        notes={k: v[:1000] for k, v in (notes or {}).items() if k in clean and v.strip()},
         comment=comment.strip(), private_note=private_note.strip(), recommendation=recommendation, coi_declared=True,
     )
     record("evaluation.submitted", target=idea.reference, actor=evaluator, detail=f"Score {ev.total}; {ev.get_recommendation_display()}")

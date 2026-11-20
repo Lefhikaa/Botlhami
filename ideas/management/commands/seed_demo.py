@@ -31,9 +31,9 @@ PEOPLE = [
     ("kabo.molefe@demo.botlhami.bw", "Kabo", "Molefe", Role.CONSULTANT, "CEDA customer service"),
 ]
 
-# Scores per criterion, in this order: innovation, market, feasibility, impact, strategic alignment, scalability.
-CRITERIA_ORDER = ["Innovation and originality", "Market potential", "Feasibility and implementation capacity", "Economic and social impact",
-                  "Strategic alignment with CEDA", "Scalability"]
+# Scores per CEDA evaluation category, in CEDA's order (1 Poor to 5 Excellent).
+CRITERIA_ORDER = ["Strategic alignment", "Innovation and originality", "Impact potential", "Feasibility and viability",
+                  "Scalability and sustainability", "Implementation capacity, team capability and governance"]
 
 IDEAS = [
     ("neo", dict(title="SolarCool: solar cold rooms for horticulture farmers", sector="Energy & water", maturity="Pilot", location="Gaborone",
@@ -42,23 +42,23 @@ IDEAS = [
         beneficiaries="Smallholder horticulture farmers", impact="Less post-harvest loss and steadier income; technician jobs.", jobs=12, budget=480000, sdgs=[2, 7, 8],
         capacity_skills="Refrigeration and solar installation qualifications; eight years servicing cold rooms for retailers.", capacity_resources="Two working cold rooms at the Gaborone pilot site, a service van, and P60,000 of our own money.", capacity_partners="Solar panel supplier agreed; two farmer cooperatives signed up.", capacity_gaps="Need a mobile-money integration partner: talking to two providers.",
         team="Neo Kgosi (founder)\nTwo refrigeration technicians"), "awarded", [
-        ("mpho", (5, 4, 4, 5, 4, 4), "advance", "Clear problem with pilot evidence. The rental model fits farmers' cash flow."),
-        ("thato", (4, 5, 4, 4, 5, 4), "advance", "Strong demand and good fit with CEDA's agriculture focus. Show unit costs per crate.")]),
+        ("mpho", (4, 5, 5, 4, 4, 4), "advance", "Clear problem with pilot evidence. The rental model fits farmers' cash flow."),
+        ("thato", (5, 4, 4, 4, 4, 5), "advance", "Strong demand and good fit with CEDA's agriculture focus. Show unit costs per crate.")]),
     ("onalenna", dict(title="Morula Gold: value-added morula products", sector="Agriculture & agro-processing", maturity="Prototype", location="Serowe",
         problem="Morula fruit is harvested by rural women but mostly sold raw at low prices, and much of the crop goes to waste.",
         solution="A small processing unit turning morula into juice concentrate, jam and cosmetic oil, buying from harvester cooperatives.",
         beneficiaries="Rural women harvesters", impact="Higher, predictable harvester income.", jobs=15, budget=390000, sdgs=[1, 5, 8],
         capacity_skills="Food technology degree and three years in a juice factory; cooperative leaders with harvesting experience.", capacity_resources="Kitchen equipment and a small rented unit in Serowe.", capacity_partners="Two harvester cooperatives (verbal agreement).", capacity_gaps="Need certified processing premises and BOBS product certification.",
         team="Onalenna Dube (founder, food technologist)"), "revision", [
-        ("mpho", (3, 4, 2, 4, 4, 3), "revise", "Strong social impact, but the sourcing plan across seasons is unclear."),
-        ("thato", (3, 3, 2, 4, 3, 2), "revise", "Promising products. Add cost per unit and a plan for the months without fruit.")]),
+        ("mpho", (4, 3, 4, 2, 3, 4), "revise", "Strong social impact, but the sourcing plan across seasons is unclear."),
+        ("thato", (3, 3, 4, 2, 2, 3), "revise", "Promising products. Add cost per unit and a plan for the months without fruit.")]),
     ("tumelo", dict(title="BoreSense: remote monitoring for village boreholes", sector="Energy & water", maturity="Pilot", location="Kanye",
         problem="Borehole pumps fail without warning and are only reported when taps run dry, leaving villages without water for days.",
         solution="Low-cost sensors on pumps send water-level and pump-health readings to a maintenance dashboard and SMS alerts.",
         beneficiaries="Rural communities and councils", impact="Fewer, shorter outages; technician jobs.", jobs=8, budget=310000, sdgs=[6, 9, 11],
         capacity_skills="Electrical engineering; five years maintaining pumps for a district council.", capacity_resources="Ten sensor prototypes installed in Kanye; dashboard built.", capacity_partners="District council water unit supports the pilot.", capacity_gaps="Need SMS gateway funding and a second technician.",
         team="Tumelo Phiri (founder, electrical engineer)"), "half", [
-        ("mpho", (4, 4, 4, 5, 4, 4), "advance", "A real public need with a credible pilot. Councils are a clear buyer.")]),
+        ("mpho", (4, 4, 5, 4, 4, 4), "advance", "A real public need with a credible pilot. Councils are a clear buyer.")]),
     ("neo", dict(title="TenderPing: tender alerts for SMEs", sector="ICT & digital services", maturity="Prototype", location="Gaborone",
         problem="Small citizen-owned businesses miss public tenders because notices are scattered and bid documents are hard to prepare.",
         solution="A WhatsApp and web service that matches tenders to each SME's sectors and provides bid checklists and templates.",
@@ -71,24 +71,28 @@ IDEAS = [
         beneficiaries="Secondary school pupils and teachers", impact="Better maths results; local content jobs.", jobs=6, budget=220000, sdgs=[4, 10],
         capacity_skills="Two qualified maths teachers and a USSD developer.", capacity_resources="Lessons for two school years written; USSD test code from a mobile operator.", capacity_partners="Two schools in Maun interested in a trial.", capacity_gaps="Need a commercial USSD agreement and teacher training time.",
         team="Tumelo Phiri (founder)\nTwo maths teachers"), "adjudication", [
-        ("mpho", (5, 4, 3, 5, 4, 5), "advance", "Genuinely new for Botswana and could reach every district. Needs a partner school pilot."),
-        ("thato", (2, 3, 3, 3, 3, 2), "decline", "Similar SMS tutoring has been tried. I'm not convinced pupils will pay or schools will adopt it.")]),
+        ("mpho", (4, 5, 5, 3, 5, 4), "advance", "Genuinely new for Botswana and could reach every district. Needs a partner school pilot.",
+         {"Innovation and originality": "Using USSD for maths lessons is new here and works on any phone.",
+          "Scalability and sustainability": "Could reach every district quickly through the mobile networks."}),
+        ("thato", (3, 2, 3, 3, 2, 3), "decline", "Similar SMS tutoring has been tried. I'm not convinced pupils will pay or schools will adopt it.",
+         {"Innovation and originality": "SMS tutoring has been tried in the region before; the idea isn't new.",
+          "Scalability and sustainability": "No clear way to pay for it once the grant runs out."})]),
     ("onalenna", dict(title="Kgomo Trace: cattle traceability with low-cost tags", sector="Agriculture & agro-processing", maturity="Pilot", location="Francistown",
         problem="Small cattle farmers struggle to prove where their animals come from, which keeps them out of higher-paying export markets.",
         solution="Low-cost tags read by a phone app record each animal's movements and treatments, ready for buyers and inspectors.",
         beneficiaries="Small and emerging cattle farmers", impact="Access to export prices; fewer disputes over stock.", jobs=10, budget=360000, sdgs=[1, 8, 9],
         capacity_skills="Veterinary adviser and software developer; family cattle farming background.", capacity_resources="Tag reader app working; 600 cattle tagged in the pilot.", capacity_partners="Abattoir buyer and the district veterinary office support the pilot.", capacity_gaps="Need bulk tag supply at a lower price.",
         team="Onalenna Dube (founder)\nVeterinary adviser"), "adjudication", [
-        ("mpho", (4, 5, 4, 4, 5, 4), "advance", "Strong market pull from export buyers and a clear fit with CEDA's agriculture priorities."),
-        ("lorato", (4, 4, 4, 4, 5, 5), "advance", "Well-run pilot. Scales easily to other districts and to neighbouring countries.")]),
+        ("mpho", (5, 4, 4, 4, 4, 5), "advance", "Strong market pull from export buyers and a clear fit with CEDA's agriculture priorities."),
+        ("lorato", (5, 4, 4, 4, 5, 4), "advance", "Well-run pilot. Scales easily to other districts and to neighbouring countries.")]),
     ("neo", dict(title="Sebaka: shipping-container co-working spaces", sector="Other", maturity="Concept", location="Palapye",
         problem="Young freelancers in smaller towns have nowhere affordable to work with reliable power and internet.",
         solution="Converted shipping containers fitted out as co-working spaces, rented by the day or month.",
         beneficiaries="Freelancers and young entrepreneurs", impact="Affordable workspace in smaller towns.", jobs=3, budget=280000, sdgs=[8, 11],
         capacity_skills="Business studies graduate; no construction experience yet.", capacity_resources="A plot available to rent.", capacity_partners="None yet.", capacity_gaps="Need a builder, internet supplier and evidence of demand.",
         team="Neo Kgosi (founder)"), "adjudication", [
-        ("thato", (2, 2, 3, 2, 2, 2), "decline", "Co-working spaces already exist, and demand in Palapye isn't shown."),
-        ("lorato", (2, 3, 2, 2, 2, 2), "decline", "Needs evidence of demand and a cheaper way to start, such as renting an existing building.")]),
+        ("thato", (2, 2, 2, 3, 2, 2), "decline", "Co-working spaces already exist, and demand in Palapye isn't shown."),
+        ("lorato", (2, 2, 2, 2, 2, 3), "decline", "Needs evidence of demand and a cheaper way to start, such as renting an existing building.")]),
 ]
 
 
@@ -126,9 +130,10 @@ class Command(BaseCommand):
             if stage == "submitted":
                 continue
             svc.accept_and_assign(idea, admin, [users[e[0]] for e in evals] if stage != "half" else [users["mpho"], users["thato"]])
-            for ev, vals, rec, comment in evals:
+            for ev, vals, rec, comment, *extra in evals:
                 scores = {str(crit[name].pk): v for name, v in zip(CRITERIA_ORDER, vals) if name in crit}
-                svc.submit_evaluation(idea, users[ev], scores, comment, rec, coi_declared=True)
+                notes = {str(crit[name].pk): text for name, text in (extra[0] if extra else {}).items() if name in crit}
+                svc.submit_evaluation(idea, users[ev], scores, comment, rec, coi_declared=True, notes=notes)
             if stage == "awarded":
                 svc.decide(idea, adj, Status.APPROVED, "Strong pilot evidence and clear job creation.")
                 svc.grant_award(idea, adj, "seed", "Referred to CEDA financing with incubation support.", 250000, officer=users["kabo"])

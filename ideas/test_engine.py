@@ -31,7 +31,7 @@ class EngineTests(TestCase):
         active = Criterion.objects.filter(active=True)
         self.assertEqual(active.count(), 6)
         self.assertEqual(sum(c.weight for c in active), 100)
-        self.assertTrue(active.filter(name="Scalability").exists())
+        self.assertTrue(active.filter(name="Implementation capacity, team capability and governance").exists())
 
     def test_agreeing_strong_idea_is_recommended_for_approval(self):
         a = engine.analyse(self.idea("Kgomo Trace"))
@@ -39,14 +39,14 @@ class EngineTests(TestCase):
         self.assertEqual(a.combined, 86)
         self.assertFalse(a.disagreements)
         self.assertIn("Both evaluators recommend advancing.", a.summary)
-        self.assertIn("strategic alignment with CEDA", " ".join(a.summary))
+        self.assertIn("strategic alignment (5/5)", " ".join(a.summary))
 
     def test_split_idea_needs_further_assessment_with_reasons(self):
         a = engine.analyse(self.idea("Thuto Pocket"))
         self.assertEqual(a.verdict, engine.FURTHER)
-        self.assertEqual([c.name for c in a.disagreements], ["Innovation and originality", "Scalability", "Economic and social impact"])
+        self.assertEqual([c.name for c in a.disagreements], ["Innovation and originality", "Scalability and sustainability", "Impact potential"])
         reasons = " ".join(a.reasons)
-        self.assertIn("differ by 34 points", reasons)
+        self.assertIn("differ by 35 points", reasons)
         self.assertIn("advancing and another recommends declining", reasons)
 
     def test_weak_idea_is_recommended_for_decline(self):
@@ -99,3 +99,30 @@ class EngineTests(TestCase):
         self.assertEqual(r.context["chosen"], [a.pk, b.pk] if r.context["chosen"][0] == a.pk else [b.pk, a.pk])
         self.assertEqual(r.context["rows"][0]["a"].verdict, engine.FURTHER)
         self.assertContains(r, "Recommend approval")
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class CategoryCommentTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_demo", password="Demo-pass-2026", stdout=open("/dev/null", "w"))
+
+    def test_ceda_categories_in_ceda_order(self):
+        names = list(Criterion.objects.filter(active=True).values_list("name", flat=True))
+        self.assertEqual(names, ["Strategic alignment", "Innovation and originality", "Impact potential", "Feasibility and viability",
+                                 "Scalability and sustainability", "Implementation capacity, team capability and governance"])
+        self.assertFalse(Criterion.objects.filter(name="Market potential", active=True).exists())
+
+    def test_category_comments_reach_the_panel_and_the_applicant(self):
+        idea = Idea.objects.get(title__startswith="Thuto Pocket")
+        self.client.force_login(User.objects.get(email="kefilwe.tau@demo.botlhami.bw"))
+        r = self.client.get(reverse("ideas:score_report", args=[idea.pk]))
+        self.assertContains(r, "Comments by category")
+        self.assertContains(r, "the idea isn&#x27;t new")
+        # once the round closes the applicant sees scores and comments by category, anonymously
+        ev = idea.round_evaluations().first()
+        self.assertEqual(len(ev.breakdown()), 6)
+        self.client.force_login(idea.submitter)
+        r = self.client.get(reverse("ideas:detail", args=[idea.pk]))
+        self.assertContains(r, "Scores by category")
+        self.assertNotContains(r, "Sebina")

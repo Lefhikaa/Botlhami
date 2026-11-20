@@ -46,6 +46,8 @@
   <td>{% if c.disagree %}<span class="pill s-revision">Disagree</span>{% elif c.avg >= 4 %}<span class="pill s-approved">Strength</span>{% elif c.avg and c.avg <= 2.5 %}<span class="pill s-rejected">Weakness</span>{% endif %}</td></tr>{% endfor %}
   <tr class="total-row"><td><strong>Weighted total</strong></td><td class="num">100%</td>{% for t in a.totals %}<td class="num"><strong>{{ t }}</strong></td>{% endfor %}<td class="num"><strong>{{ a.combined }}</strong></td><td class="num">{% if a.totals|length > 1 %}σ {{ a.total_sd }}{% endif %}</td><td></td></tr>
   </tbody></table></div>
+  {% if has_comments %}<h3 class="mt">Comments by category</h3>
+  <dl class="cat-comments">{% for c, notes in comments %}{% if notes %}<dt>{{ c.name }}</dt>{% for letter, note in notes %}<dd><strong>{{ letter }}:</strong> {{ note }}</dd>{% endfor %}{% endif %}{% endfor %}</dl>{% endif %}
   <h3 class="mt">What each evaluator recommended</h3>
   <ul class="evals">{% for e in a.evaluations %}<li><strong>Evaluator {% cycle 'A' 'B' 'C' 'D' 'E' 'F' 'G' %}</strong>: {{ e.get_recommendation_display }} · {{ e.total }}/100<div class="small">{{ e.comment }}</div>{% if e.private_note %}<div class="small muted">Note for the panel: {{ e.private_note }}</div>{% endif %}</li>{% endfor %}</ul>
 </section>

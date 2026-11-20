@@ -108,6 +108,7 @@ class Idea(models.Model):
     capacity_resources = models.TextField("resources in place", blank=True)
     capacity_partners = models.TextField("partners and suppliers", blank=True)
     capacity_gaps = models.TextField("gaps and how you'll fill them", blank=True)
+    capacity_governance = models.TextField("governance", blank=True)
     ip_declared = models.BooleanField(default=False)
 
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT, db_index=True)
@@ -239,6 +240,7 @@ class Evaluation(models.Model):
     round = models.PositiveSmallIntegerField()
     rubric = models.JSONField(help_text="The criteria and weights in force when this was scored.")
     scores = models.JSONField(help_text="{criterion id: score 1-5}")
+    notes = models.JSONField(default=dict, blank=True, help_text="{criterion id: optional comment}")
     comment = models.TextField("feedback for the applicant")
     private_note = models.TextField("private note for adjudicators", blank=True)
     recommendation = models.CharField(max_length=10, choices=Recommendation.choices)
@@ -248,6 +250,11 @@ class Evaluation(models.Model):
     class Meta:
         unique_together = [("idea", "evaluator", "round")]
         ordering = ["round", "submitted_at"]
+
+    def breakdown(self):
+        """[(criterion name, score, comment)] in rubric order, for showing an evaluation in full."""
+        notes = self.notes or {}
+        return [(c["name"], self.scores.get(str(c["id"])), notes.get(str(c["id"]), "")) for c in self.rubric]
 
     @property
     def total(self):
