@@ -3,12 +3,17 @@
 <section class="card narrow">
   <h1>Create an account</h1>
   <p class="muted">Register to submit ideas and track them. We'll email you a code to verify your address.</p>
-  <form method="post" novalidate>{% csrf_token %}
+  <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
     {% include "_form_errors.html" %}
     <div class="grid2">{% include "_field.html" with field=form.first_name %}{% include "_field.html" with field=form.last_name %}</div>
     {% include "_field.html" with field=form.email %}
     {% include "_field.html" with field=form.phone %}
     {% include "_field.html" with field=form.organisation %}
+    <fieldset class="idbox"><legend>Your identity</legend>
+      <p class="small muted">CEDA supports citizen-owned businesses, so we ask for your Omang. A CEDA officer checks the copy you upload.</p>
+      {% include "_field.html" with field=form.omang %}
+      {% include "_field.html" with field=form.id_copy %}
+    </fieldset>
     {% include "_field.html" with field=form.password1 %}
     {% include "_field.html" with field=form.password2 %}
     {% include "_field.html" with field=form.consent %}

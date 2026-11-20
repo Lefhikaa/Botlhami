@@ -13,7 +13,7 @@ from accounts.models import Role
 from audit.log import record
 from core.permissions import role_required
 
-from . import engine
+from . import development, engine
 from . import services as svc
 from .forms import AwardForm, DecisionForm, EvaluationForm, IdeaForm, MessageForm, MilestoneAddForm, MilestoneUpdateForm, ReturnForm
 from .models import STAGES, Award, Idea, IdeaDocument, Milestone, Notification, Status, WorkflowSettings
@@ -439,6 +439,43 @@ def implementation(request):
         "waiting": sum(1 for a, _ in rows for m in a.milestones.all() if m.awaiting_confirmation),
     }
     return render(request, "ideas/implementation.html", {"rows": rows, "totals": totals})
+
+
+def _report_idea(request, pk):
+    """The applicant, and CEDA staff who can see the idea, can open a declined idea's report."""
+    idea = _get_visible(request, pk)
+    if idea.status != Status.REJECTED:
+        raise Http404
+    if request.user.pk != idea.submitter_id and not request.user.has_role(Role.ADMIN, Role.ADJUDICATOR, Role.CONSULTANT):
+        raise PermissionDenied
+    return idea
+
+
+@login_required
+def development_report(request, pk):
+    idea = _report_idea(request, pk)
+    report = development.development_report(idea)
+    return render(request, "ideas/development.html", {"idea": idea, "r": report})
+
+
+@login_required
+def certificate(request, pk):
+    idea = _report_idea(request, pk)
+    decided = idea.history.filter(to_status=Status.REJECTED).order_by("-at").first()
+    return render(request, "ideas/certificate.html", {"idea": idea, "decided": decided})
+
+
+@require_POST
+@role_required(Role.SUBMITTER)
+def new_version(request, pk):
+    idea = get_object_or_404(Idea, pk=pk, submitter=request.user)
+    try:
+        new = svc.start_new_version(idea, request.user)
+    except svc.WorkflowError as e:
+        _flash_error(request, e)
+        return redirect("ideas:detail", pk=idea.pk)
+    messages.success(request, f"New draft {new.reference} created from {idea.reference}. Use your development report to improve it, then submit it in the next call.")
+    return redirect("ideas:edit", pk=new.pk)
 
 
 # --- pipeline and notifications --------------------------------------------

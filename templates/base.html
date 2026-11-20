@@ -28,7 +28,7 @@
         {% if user.role == "admin" %}<a href="{% url 'ideas:screening' %}">Screening</a>{% endif %}
         {% if user.role == "admin" or user.role == "adjudicator" or user.role == "observer" %}<a href="{% url 'ideas:pipeline' %}">Pipeline</a>{% endif %}
         {% if user.role == "admin" or user.role == "adjudicator" or user.role == "observer" %}<a href="{% url 'reports:dashboard' %}">Reports</a>{% endif %}
-        {% if user.role == "consultant" or user.role == "admin" %}<a href="{% url 'chat:console' %}">Chat</a><a href="{% url 'support:queue' %}">Support</a>{% endif %}
+        {% if user.role == "consultant" or user.role == "admin" %}<a href="{% url 'chat:console' %}">Chat</a><a href="{% url 'support:queue' %}">Support</a><a href="{% url 'accounts:id_queue' %}">ID checks</a>{% endif %}
         {% if user.role == "consultant" %}<a href="{% url 'ideas:implementation' %}">My awards</a>{% endif %}
         {% if user.role == "admin" %}<a href="{% url 'support:manage_home' %}">Content</a><a href="{% url 'admin:index' %}">Admin</a>{% endif %}
         {% if user.role == "submitter" or user.role == "evaluator" %}<a href="{% url 'support:help' %}">Help</a>{% endif %}

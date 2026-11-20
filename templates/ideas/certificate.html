@@ -1,0 +1,25 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Certificate of participation · {{ idea.reference }}</title>
+<link rel="icon" href="{% static 'img/botlhami-mark.svg' %}" type="image/svg+xml">
+<link rel="stylesheet" href="{% static 'css/certificate.css' %}">
+</head><body>
+<div class="toolbar"><a href="{% url 'ideas:development' idea.pk %}">← Back to the report</a><span>Print or save as PDF from your browser (landscape works best).</span></div>
+<main class="cert">
+  <div class="band" aria-hidden="true"></div>
+  <header><img src="{% static 'img/botlhami-mark.svg' %}" alt="" width="56" height="56"><div><strong>Botlhami</strong><span>Innovation programme · in partnership with CEDA</span></div>
+    <img class="ceda" src="{% static 'img/ceda-logo-tagline.png' %}" alt="CEDA"></header>
+  <p class="kicker">Certificate of participation</p>
+  <h1>{{ idea.submitter.first_name }} {{ idea.submitter.last_name }}</h1>
+  <p class="lead">took part in the Botlhami innovation programme with the idea</p>
+  <p class="idea">{{ idea.title }}</p>
+  <p class="lead">which was independently evaluated against CEDA's six evaluation categories.</p>
+  <footer>
+    <div><span>Reference</span><strong>{{ idea.reference }}</strong></div>
+    <div><span>Submitted</span><strong>{{ idea.submitted_at|date:"j F Y" }}</strong></div>
+    <div><span>Evaluation completed</span><strong>{{ decided.at|date:"j F Y" }}</strong></div>
+  </footer>
+  <p class="verify">Issued by the Botlhami platform. Anyone can confirm this certificate by quoting the reference to CEDA.</p>
+  <div class="band" aria-hidden="true"></div>
+</main>
+</body></html>

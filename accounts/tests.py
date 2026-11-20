@@ -19,6 +19,7 @@ def register(client, email="neo@example.bw", **extra):
     data = {
         "first_name": "Neo", "last_name": "Kgosi", "email": email, "phone": "71234567",
         "organisation": "Kgosi AgriTech", "password1": STRONG, "password2": STRONG, "consent": "on",
+        "omang": "123412345",
     }
     data.update(extra)
     return client.post(reverse("accounts:register"), data)
@@ -160,3 +161,57 @@ class PasswordResetEmailTests(TestCase):
         r = self.client.get(url, secure=True, follow=True)
         self.assertContains(r, "password")
         self.assertIn("set-password", r.redirect_chain[-1][0])
+
+
+
+@override_settings(CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}})
+class OmangTests(TestCase):
+    def test_omang_format_rules(self):
+        from .models import omang_problem
+        self.assertIsNone(omang_problem("123412345"))
+        self.assertIsNone(omang_problem("123422345"))
+        self.assertIsNotNone(omang_problem("12341234"))     # eight digits
+        self.assertIsNotNone(omang_problem("123432345"))    # middle digit must be 1 or 2
+        self.assertIsNotNone(omang_problem("12341234a"))
+
+    def test_number_is_never_stored_and_duplicates_are_blocked(self):
+        register(self.client, omang="123 412 345")
+        u = User.objects.get(email="neo@example.bw")
+        self.assertEqual(u.omang_last4, "2345")
+        self.assertNotIn("123412345", str(User.objects.filter(pk=u.pk).values().first()))
+        self.assertEqual(u.id_status, User.IdStatus.NONE)
+        self.client.logout()
+        r = register(self.client, email="other@example.bw", omang="123412345")
+        self.assertContains(r, "already registered")
+        self.assertFalse(User.objects.filter(email="other@example.bw").exists())
+
+    def test_bad_format_is_refused_at_registration(self):
+        r = register(self.client, omang="123432345")
+        self.assertContains(r, "valid Omang")
+
+    def test_upload_then_staff_verify(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        import tempfile
+        with self.settings(MEDIA_ROOT=tempfile.mkdtemp()):
+            register(self.client)
+            u = User.objects.get(email="neo@example.bw")
+            self.client.force_login(u)
+            self.assertFalse(u.identity_ready)
+            f = SimpleUploadedFile("omang.png", b"\x89PNG fake", content_type="image/png")
+            self.client.post(reverse("accounts:identity"), {"omang": "", "id_copy": f})
+            u.refresh_from_db()
+            self.assertEqual(u.id_status, User.IdStatus.PENDING)
+            self.assertTrue(u.identity_ready)
+            staff = User.objects.create_user("k@x.bw", STRONG, role=Role.CONSULTANT, email_verified=True)
+            self.client.force_login(staff)
+            self.assertContains(self.client.get(reverse("accounts:id_queue")), "Neo")
+            self.assertEqual(self.client.get(reverse("accounts:id_document", args=[u.pk])).status_code, 200)
+            r = self.client.post(reverse("accounts:id_check", args=[u.pk]), {"decision": "rejected", "note": ""})
+            self.assertContains(r, "Tell the applicant why")
+            self.client.post(reverse("accounts:id_check", args=[u.pk]), {"decision": "verified", "note": ""})
+            u.refresh_from_db()
+            self.assertEqual(u.id_status, User.IdStatus.VERIFIED)
+            self.assertTrue(AuditEvent.objects.filter(action="identity.document_opened").exists())
+            # applicants can't open other people's documents
+            self.client.force_login(u)
+            self.assertEqual(self.client.get(reverse("accounts:id_document", args=[u.pk])).status_code, 403)

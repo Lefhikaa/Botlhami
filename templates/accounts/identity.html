@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}Your identity{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Your identity</h1>
+  <p class="muted">CEDA supports citizen-owned businesses, so every applicant confirms their identity with their Omang. You can submit ideas while CEDA checks it; an award needs a verified Omang.</p>
+  <div class="msg {% if user.id_status == 'verified' %}msg-success{% elif user.id_status == 'pending' %}msg-info{% else %}msg-warning{% endif %}">
+    <strong>Status: {{ user.get_id_status_display }}</strong>{% if user.omang_last4 %} · Omang {{ user.omang_masked }}{% endif %}
+    {% if user.id_note %}<div class="small">CEDA's note: {{ user.id_note }}</div>{% endif %}
+  </div>
+  {% if user.id_status != "verified" %}
+  <form method="post" enctype="multipart/form-data" novalidate class="mt">{% csrf_token %}
+    {% include "_form_errors.html" %}
+    {% include "_field.html" with field=form.omang %}
+    {% if user.omang_last4 %}<p class="small muted">Leave the number empty to keep {{ user.omang_masked }}.</p>{% endif %}
+    {% include "_field.html" with field=form.id_copy %}
+    {% if user.id_document %}<p class="small muted">A copy is already uploaded. Upload a new one only to replace it.</p>{% endif %}
+    <button class="btn btn-primary">Send for checking</button>
+  </form>
+  {% endif %}
+  <p class="small muted mt">How we protect it: your Omang number is never stored in readable form. We keep a protected fingerprint of it, to stop duplicate accounts, and the last 4 digits. The card copy can only be opened by CEDA staff, and every time they open it is recorded.</p>
+</section>
+{% endblock %}

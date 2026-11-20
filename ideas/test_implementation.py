@@ -103,3 +103,47 @@ class ImplementationTests(TestCase):
         self.assertContains(r, "Implementation plan")
         self.assertContains(r, "What happens next")
         self.assertContains(r, "2 of 7 done")
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class NotAwardedAndIdentityTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_demo", password="Demo-pass-2026", stdout=open("/dev/null", "w"))
+
+    def test_declined_applicant_gets_report_certificate_and_new_version(self):
+        idea = Idea.objects.get(title__startswith="Sebaka")
+        svc.decide(idea, demo("kefilwe.tau"), Status.REJECTED, "Demand isn't shown yet.")
+        self.assertTrue(idea.submitter.notifications.filter(text__contains="development report").exists())
+        self.client.force_login(idea.submitter)
+        r = self.client.get(reverse("ideas:development", args=[idea.pk]))
+        self.assertContains(r, "Your next steps")
+        self.assertContains(r, "Demand isn&#x27;t shown yet.")
+        self.assertGreaterEqual(len(r.context["r"]["steps"]), 2)
+        self.assertContains(self.client.get(reverse("ideas:certificate", args=[idea.pk])), "Certificate of participation")
+        r = self.client.post(reverse("ideas:new_version", args=[idea.pk]))
+        new = Idea.objects.filter(submitter=idea.submitter, status=Status.DRAFT).latest("pk")
+        self.assertEqual(new.title, idea.title)
+        self.assertRedirects(r, reverse("ideas:edit", args=[new.pk]))
+        # other people can't see the report
+        self.client.force_login(demo("onalenna.dube"))
+        self.assertEqual(self.client.get(reverse("ideas:development", args=[idea.pk])).status_code, 403)
+
+    def test_report_only_for_declined_ideas(self):
+        idea = Idea.objects.get(title__startswith="Kgomo")
+        self.client.force_login(idea.submitter)
+        self.assertEqual(self.client.get(reverse("ideas:development", args=[idea.pk])).status_code, 404)
+
+    def test_no_submission_without_omang_and_no_award_without_verification(self):
+        u = User.objects.create_user("new@x.bw", "Pass-word-123", role=Role.SUBMITTER, email_verified=True)
+        draft = Idea.objects.get(title__startswith="TenderPing")
+        draft.pk = None
+        draft.submitter, draft.status, draft.reference = u, Status.DRAFT, ""
+        draft.save()
+        with self.assertRaisesMessage(svc.WorkflowError, "Omang"):
+            svc.submit(draft, u)
+        # Tumelo's Omang is still waiting for CEDA: approving works, awarding doesn't
+        thuto = Idea.objects.get(title__startswith="Thuto")
+        svc.decide(thuto, demo("kefilwe.tau"), Status.APPROVED, "Approved after discussion.")
+        with self.assertRaisesMessage(svc.WorkflowError, "must be verified"):
+            svc.grant_award(thuto, demo("kefilwe.tau"), "pilot", "Pilot with CEDA.")

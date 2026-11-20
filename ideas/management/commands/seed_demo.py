@@ -31,6 +31,8 @@ PEOPLE = [
     ("kabo.molefe@demo.botlhami.bw", "Kabo", "Molefe", Role.CONSULTANT, "CEDA customer service"),
 ]
 
+DEMO_OMANG = {"Neo": "999910001", "Onalenna": "999920002", "Tumelo": "999910003"}
+
 # Scores per CEDA evaluation category, in CEDA's order (1 Poor to 5 Excellent).
 CRITERIA_ORDER = ["Strategic alignment", "Innovation and originality", "Impact potential", "Feasibility and viability",
                   "Scalability and sustainability", "Implementation capacity, team capability and governance"]
@@ -110,6 +112,13 @@ class Command(BaseCommand):
         for email, first, last, role, org in PEOPLE:
             u, _ = User.objects.get_or_create(email=email, defaults=dict(first_name=first, last_name=last, role=role, organisation=org, email_verified=True))
             u.set_password(password)
+            if role == Role.SUBMITTER and not u.omang_hash:
+                # Made-up numbers in the valid format (nine digits, middle digit 1 or 2), clearly not real people.
+                u.set_omang(DEMO_OMANG[first])
+                pdf = simple_pdf("DEMO OMANG COPY", [f"{first} {last}", f"Omang ending {u.omang_last4}",
+                                                     "Not a real identity document: Botlhami demo data only."])
+                u.id_document.save(f"demo-omang-{first.lower()}.pdf", ContentFile(pdf), save=False)
+                u.id_status = User.IdStatus.PENDING if first == "Tumelo" else User.IdStatus.VERIFIED
             u.save()
             users[first.lower()] = u
         self.seed_support(users)

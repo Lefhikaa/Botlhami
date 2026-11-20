@@ -3,6 +3,9 @@
 <section class="card narrow">
   <h1>Your profile</h1>
   <p class="muted">{{ user.email }} · {{ user.get_role_display }}{% if user.email_verified %} · <span class="ok">email verified</span>{% endif %}</p>
+  {% if user.role == "submitter" %}<div class="msg {% if user.id_status == 'verified' %}msg-success{% elif user.id_status == 'pending' %}msg-info{% else %}msg-warning{% endif %} small">
+    <strong>Omang {{ user.omang_masked|default:"not added" }}:</strong> {{ user.get_id_status_display }}.{% if user.id_note %} {{ user.id_note }}{% endif %}
+    {% if user.id_status != "verified" %}<a href="{% url 'accounts:identity' %}">{% if user.id_status == "pending" %}View or replace your upload{% else %}Add your Omang{% endif %}</a>{% endif %}</div>{% endif %}
   <form method="post" novalidate>{% csrf_token %}
     <div class="grid2">{% include "_field.html" with field=form.first_name %}{% include "_field.html" with field=form.last_name %}</div>
     {% include "_field.html" with field=form.phone %}

@@ -42,6 +42,31 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra)
 
 
+def id_document_path(instance, filename):
+    import os
+    import uuid
+    return f"identity/{uuid.uuid4().hex}{os.path.splitext(filename)[1].lower()}"
+
+
+def omang_problem(number):
+    """Why an Omang number isn't valid, or None. Omang numbers have nine digits and the
+    middle (fifth) digit is 1 or 2."""
+    digits = "".join(ch for ch in str(number) if ch.isdigit())
+    if len(digits) != 9 or len(digits) != len(str(number).replace(" ", "")):
+        return "An Omang number has exactly nine digits."
+    if digits[4] not in "12":
+        return "That isn't a valid Omang number. Check it against your card."
+    return None
+
+
+def omang_hash(number):
+    import hashlib
+    import hmac
+    digits = "".join(ch for ch in str(number) if ch.isdigit())
+    key = (getattr(settings, "OMANG_PEPPER", "") or settings.SECRET_KEY).encode()
+    return hmac.new(key, digits.encode(), hashlib.sha256).hexdigest()
+
+
 class User(AbstractUser):
     username = None
     email = models.EmailField("email address", unique=True)
@@ -54,6 +79,22 @@ class User(AbstractUser):
         "email me when my submissions are updated", default=True,
         help_text="Free alerts. You can switch them off at any time.",
     )
+
+    # Identity (Omang). The number itself is never stored: only a keyed hash, to stop one
+    # person holding two accounts, and the last 4 digits, to show back to people.
+    class IdStatus(models.TextChoices):
+        NONE = "none", "Not provided"
+        PENDING = "pending", "Waiting for CEDA to check"
+        VERIFIED = "verified", "Verified"
+        REJECTED = "rejected", "Not accepted"
+
+    omang_hash = models.CharField(max_length=64, unique=True, null=True, blank=True, editable=False)
+    omang_last4 = models.CharField("Omang (last 4 digits)", max_length=4, blank=True)
+    id_document = models.FileField(upload_to=id_document_path, blank=True)
+    id_status = models.CharField("identity check", max_length=10, choices=IdStatus.choices, default=IdStatus.NONE)
+    id_note = models.CharField("note from CEDA", max_length=255, blank=True)
+    id_checked_at = models.DateTimeField(null=True, blank=True)
+    id_checked_by = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
@@ -68,6 +109,19 @@ class User(AbstractUser):
 
     def has_role(self, *roles):
         return self.is_authenticated and (self.role in roles or self.is_superuser)
+
+    def set_omang(self, number):
+        self.omang_hash = omang_hash(number)
+        self.omang_last4 = "".join(ch for ch in str(number) if ch.isdigit())[-4:]
+
+    @property
+    def omang_masked(self):
+        return f"•••••{self.omang_last4}" if self.omang_last4 else ""
+
+    @property
+    def identity_ready(self):
+        """Enough to submit an idea: an Omang number and a card copy waiting for, or past, CEDA's check."""
+        return bool(self.omang_hash) and self.id_status in (self.IdStatus.PENDING, self.IdStatus.VERIFIED)
 
     @property
     def is_staff_role(self):

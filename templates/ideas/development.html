@@ -1,0 +1,49 @@
+{% extends "base.html" %}{% load ideas_tags %}{% block title %}Development report · {{ idea.reference }}{% endblock %}
+{% block content %}
+<div class="page-head"><div><span class="tag">{{ idea.reference }}</span><h1 class="mt-s">Your development report</h1>
+<p class="muted">{{ idea.title }}</p></div>
+<div class="row no-print"><a class="btn btn-sm" href="{% url 'ideas:certificate' idea.pk %}">Certificate of participation</a><a class="btn btn-sm" href="{% url 'ideas:detail' idea.pk %}">Back to the idea</a></div></div>
+
+<section class="card dev-hero">
+  <div><h2>Not awarded this time, but not the end</h2>
+    <p>Thank you for submitting your idea. It wasn't selected for an award in this call. Independent evaluators scored it carefully, and this report sets out what they saw, what to strengthen, and the support you can still use. Many successful innovators were declined first.</p>
+    {% if r.decision.note %}<p class="small"><strong>The panel's reason:</strong> {{ r.decision.note }}</p>{% endif %}</div>
+  {% if r %}<div class="dev-score"><strong>{{ r.a.combined }}</strong><span>/100</span><small>Pass mark {{ r.a.pass_mark }}</small></div>{% endif %}
+</section>
+
+{% if r %}
+<div class="report-grid mt">
+  <section class="card"><h2>How you scored</h2><p class="small muted">The average of the independent evaluators' scores, 1 (Poor) to 5 (Excellent).</p>
+    <div class="dev-bars">{% for c, pct in r.rows %}<div class="dev-bar{% if c in r.focus %} focus{% endif %}"><span class="lbl">{{ c.name }}</span><span class="track"><i style="width: {{ pct }}%"></i></span><span class="num">{{ c.avg }}</span></div>{% endfor %}</div>
+    <div class="grid2 mt">
+      <div><h3>What worked</h3><ul class="chips">{% for c in r.strengths %}<li class="chip chip-ok">{{ c.name }}</li>{% endfor %}</ul></div>
+      <div><h3>Focus here next</h3><ul class="chips">{% for c in r.focus %}<li class="chip chip-warn">{{ c.name }}</li>{% endfor %}</ul></div>
+    </div>
+  </section>
+  <section class="card"><h2>What the evaluators said</h2>
+    {% for text in r.general_comments %}<blockquote class="quote">{{ text }}<span>Evaluator {{ forloop.counter }}</span></blockquote>{% endfor %}
+    {% for c, notes in r.comments %}{% if notes %}<h3 class="mt">{{ c.name }}</h3>{% for n in notes %}<p class="small">“{{ n }}”</p>{% endfor %}{% endif %}{% endfor %}
+  </section>
+</div>
+
+<section class="card mt"><h2>Your next steps</h2><p class="small muted">Matched to the categories where your idea can gain the most.</p>
+  <div class="steps-grid">{% for s in r.steps %}<div class="step-card"><span class="small muted">{{ s.criterion.name }} · {{ s.criterion.avg }}/5</span><h3>{{ s.title }}</h3>
+    <ul class="small">{% for t in s.tips %}<li>{{ t }}</li>{% endfor %}</ul>
+    <p class="small">{% for label, url in s.links %}<a href="{{ url }}">{{ label }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}</p></div>{% endfor %}</div>
+</section>
+{% endif %}
+
+<section class="card mt"><h2>Support you can still get</h2>
+  <div class="support-grid">
+    <div><h3>A feedback session</h3><p class="small">Talk your report through with a CEDA consultant, one to one.</p>
+      <a class="btn btn-sm" href="{% url 'support:new' %}?subject=Feedback%20session%20for%20{{ idea.reference }}&area=evaluation">Request a session</a></div>
+    <div><h3>Mentorship and incubation</h3><p class="small">Ask about mentorship, incubators and training that fit your idea.</p>
+      <a class="btn btn-sm" href="{% url 'chat:client' %}">Chat with CEDA</a></div>
+    <div><h3>Guides and templates</h3><p class="small">The business plan template, application checklist and regulator contacts.</p>
+      <a class="btn btn-sm" href="{% url 'support:documents' %}">Forms and documents</a></div>
+    <div><h3>Try again</h3><p class="small">Start a new version with everything you've written, improve it, and submit it in the next call.</p>
+      {% if user.pk == idea.submitter_id %}<form method="post" action="{% url 'ideas:new_version' idea.pk %}">{% csrf_token %}<button class="btn btn-sm btn-primary">Start a new version</button></form>{% endif %}</div>
+  </div>
+</section>
+<p class="small muted mt no-print">Use your browser's Print option to save this report as a PDF.</p>
+{% endblock %}

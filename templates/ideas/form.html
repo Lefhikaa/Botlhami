@@ -4,6 +4,7 @@
 <p class="muted">Fields marked <span class="req">*</span> must be completed before you submit. You can save a draft at any time.</p></div>{% if idea %}<span class="tag">{{ idea.reference }}</span>{% endif %}</div>
 <form method="post" enctype="multipart/form-data" class="card" novalidate data-completeness>{% csrf_token %}
   {% include "_form_errors.html" %}
+  {% if not user.identity_ready %}<div class="msg msg-warning"><strong>One more thing before you can submit:</strong> add your Omang and a copy of your card. <a href="{% url 'accounts:identity' %}">Add it now</a> (your draft will be kept).</div>{% endif %}
   {% if revision_note %}<div class="msg msg-warning"><strong>Feedback to address:</strong> {{ revision_note.note }}</div>{% endif %}
   {% if missing %}<div class="msg msg-info"><strong>Still needed before you can submit:</strong> {{ missing|join:", " }}.</div>{% endif %}
   <div class="meter-row"><span class="small"><strong>Completeness</strong></span><span class="small muted" id="meter-label"></span></div>

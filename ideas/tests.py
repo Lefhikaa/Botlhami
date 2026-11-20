@@ -15,7 +15,12 @@ PW = "Strong-Pass-2026!"
 
 
 def make_user(email, role, **kw):
-    return User.objects.create_user(email, PW, first_name=email.split("@")[0].title(), role=role, email_verified=True, **kw)
+    u = User.objects.create_user(email, PW, first_name=email.split("@")[0].title(), role=role, email_verified=True, **kw)
+    if role == Role.SUBMITTER:
+        u.set_omang(f"9999{1}{u.pk:04d}")
+        u.id_status = User.IdStatus.VERIFIED
+        u.save()
+    return u
 
 
 def complete_idea(submitter, **kw):

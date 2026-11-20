@@ -1,17 +1,21 @@
+import os
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.http import FileResponse, Http404
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from audit.log import client_ip, record
+from core.permissions import role_required
 from core.throttle import blocked, hit, reset
 
-from .forms import CodeForm, EmailAuthenticationForm, EmailOnlyForm, ProfileForm, RegistrationForm
-from .models import OneTimeCode
+from .forms import CodeForm, EmailAuthenticationForm, EmailOnlyForm, IdCheckForm, IdentityForm, ProfileForm, RegistrationForm
+from .models import OneTimeCode, Role
 from .otp import check_code, send_code
 
 User = get_user_model()
@@ -26,11 +30,15 @@ RESEND_WINDOW = 60       # one code per minute
 def register(request):
     if request.user.is_authenticated:
         return redirect("core:dashboard")
-    form = RegistrationForm(request.POST or None)
+    form = RegistrationForm(request.POST or None, request.FILES or None)
     if request.method == "POST" and form.is_valid():
         user = form.save(commit=False)
         user.set_password(form.cleaned_data["password1"])
         user.data_consent_at = timezone.now()
+        user.set_omang(form.cleaned_data["omang"])
+        if form.cleaned_data.get("id_copy"):
+            user.id_document = form.cleaned_data["id_copy"]
+            user.id_status = User.IdStatus.PENDING
         user.save()
         record("account.registered", target=user.email, actor=user, request=request, detail="Self-registration")
         send_code(user, OneTimeCode.Purpose.VERIFY_EMAIL)
@@ -187,3 +195,68 @@ def profile(request):
         messages.success(request, "Your details are saved.")
         return redirect("accounts:profile")
     return render(request, "accounts/profile.html", {"form": form})
+
+
+# --- identity (Omang) -------------------------------------------------------
+@login_required
+def identity(request):
+    user = request.user
+    form = IdentityForm(request.POST or None, request.FILES or None, user=user)
+    if request.method == "POST" and form.is_valid():
+        if form.cleaned_data["omang"]:
+            user.set_omang(form.cleaned_data["omang"])
+        if form.cleaned_data.get("id_copy"):
+            if user.id_document:
+                user.id_document.storage.delete(user.id_document.name)
+            user.id_document = form.cleaned_data["id_copy"]
+        user.id_status, user.id_note, user.id_checked_at, user.id_checked_by = User.IdStatus.PENDING, "", None, None
+        user.save()
+        record("identity.submitted", target=user.email, actor=user)
+        from ideas.services import notify
+        notify(User.objects.filter(role__in=[Role.ADMIN, Role.CONSULTANT], is_active=True), f"{user} sent their Omang for checking.")
+        messages.success(request, "Thank you. CEDA will check your Omang, usually within 2 working days. You can submit ideas meanwhile.")
+        return redirect("accounts:identity")
+    return render(request, "accounts/identity.html", {"form": form})
+
+
+@role_required(Role.ADMIN, Role.CONSULTANT)
+def id_queue(request):
+    pending = User.objects.filter(id_status=User.IdStatus.PENDING).order_by("date_joined")
+    recent = User.objects.exclude(id_checked_at=None).order_by("-id_checked_at")[:10]
+    return render(request, "accounts/id_queue.html", {"pending": pending, "recent": recent})
+
+
+@role_required(Role.ADMIN, Role.CONSULTANT)
+def id_check(request, pk):
+    person = get_object_or_404(User, pk=pk)
+    form = IdCheckForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        if person.id_status != User.IdStatus.PENDING:
+            messages.info(request, "This identity has already been checked.")
+            return redirect("accounts:id_queue")
+        person.id_status = form.cleaned_data["decision"]
+        person.id_note = form.cleaned_data["note"].strip()
+        person.id_checked_at, person.id_checked_by = timezone.now(), request.user
+        person.save(update_fields=["id_status", "id_note", "id_checked_at", "id_checked_by"])
+        record(f"identity.{person.id_status}", target=person.email, detail=person.id_note)
+        from ideas.services import notify
+        if person.id_status == User.IdStatus.VERIFIED:
+            notify([person], "CEDA has verified your Omang. Thank you.")
+        else:
+            notify([person], f"CEDA couldn't accept your Omang copy: {person.id_note} Please upload it again in your profile.")
+        messages.success(request, f"{person}: {person.get_id_status_display()}.")
+        return redirect("accounts:id_queue")
+    record("identity.viewed", target=person.email)
+    return render(request, "accounts/id_check.html", {"person": person, "form": form})
+
+
+@role_required(Role.ADMIN, Role.CONSULTANT)
+def id_document(request, pk):
+    person = get_object_or_404(User, pk=pk)
+    if not person.id_document:
+        raise Http404
+    record("identity.document_opened", target=person.email)
+    try:
+        return FileResponse(person.id_document.open("rb"), filename=os.path.basename(person.id_document.name))
+    except FileNotFoundError:
+        raise Http404

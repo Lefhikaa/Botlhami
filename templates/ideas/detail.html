@@ -95,7 +95,10 @@
         <p class="small"><strong>Your next step:</strong> {{ plan_progress.next.title }}, due {{ plan_progress.next.due_date|date:"j M Y" }}.{% if plan_progress.next.overdue %} <span class="bad">This is overdue: update your officer.</span>{% endif %}</p>
         {% else %}<p class="small ok">✓ Every step of your plan is done. Well done!</p>{% endif %}
         <a class="btn btn-sm btn-primary" href="#plan">Open my plan</a></section>{% endif %}
-      {% if idea.status == "rejected" %}<section class="card"><h3>Outcome</h3><p class="small">{{ idea.history.last.note }}</p></section>{% endif %}
+      {% if idea.status == "rejected" %}<section class="card engine-card"><h3>Not awarded this time</h3><p class="small">{{ idea.history.last.note }}</p>
+        <p class="small">Every applicant gets a personal development report: your scores, what to improve, and the support you can still get.</p>
+        <div class="stack-s"><a class="btn btn-primary btn-block" href="{% url 'ideas:development' idea.pk %}">Open my development report</a>
+        <a class="btn btn-block" href="{% url 'ideas:certificate' idea.pk %}">Certificate of participation</a></div></section>{% endif %}
     {% endif %}
 
     {% if evaluators %}
@@ -166,6 +169,7 @@
     {% if award_form %}
     <form method="post" action="{% url 'ideas:award' idea.pk %}" class="card ok-card">{% csrf_token %}
       <h3>Grant award</h3>
+      {% if idea.submitter.id_status != "verified" %}<div class="msg msg-warning small">The applicant's Omang isn't verified yet ({{ idea.submitter.get_id_status_display|lower }}). <a href="{% url 'accounts:id_queue' %}">ID checks</a></div>{% else %}<p class="small ok">✓ Applicant's Omang verified</p>{% endif %}
       {% for field in award_form %}{% include "_field.html" %}{% endfor %}
       <button class="btn btn-ok btn-block">Grant award</button>
     </form>

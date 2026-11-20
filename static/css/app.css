@@ -472,3 +472,28 @@ main.home { flex: 1; width: 100%; }
 .cat-comments { margin: .3rem 0 0; }
 .cat-comments dt { font-weight: 700; margin-top: .6rem; }
 .cat-comments dd { margin: .15rem 0 0 0; font-size: .9rem; }
+
+/* --- development report --- */
+.dev-hero { display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: center; border-top: 3px solid var(--sorghum); }
+.dev-hero h2 { margin-top: 0; }
+.dev-score { display: grid; justify-items: center; padding: 1rem 1.4rem; border-radius: 14px; background: var(--page); }
+.dev-score strong { font-size: 2.8rem; line-height: 1; color: var(--brand); }
+.dev-score span, .dev-score small { color: var(--ink-muted); }
+.dev-bars { display: grid; gap: .55rem; margin-top: .6rem; }
+.dev-bar { display: grid; grid-template-columns: minmax(140px, 42%) 1fr 32px; gap: .6rem; align-items: center; font-size: .9rem; }
+.dev-bar .track { height: 10px; background: var(--page); border-radius: 0 5px 5px 0; overflow: hidden; }
+.dev-bar .track i { display: block; height: 100%; background: var(--brand); border-radius: 0 5px 5px 0; }
+.dev-bar.focus .track i { background: var(--sorghum); }
+.dev-bar .num { text-align: right; font-weight: 700; }
+.quote { margin: .6rem 0; padding: .6rem .9rem; border-left: 3px solid var(--brand); background: var(--page); border-radius: 0 8px 8px 0; }
+.quote span { display: block; font-size: .8rem; color: var(--ink-muted); margin-top: .3rem; }
+.steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: .6rem; }
+.step-card { border: 1px solid var(--line); border-top: 3px solid var(--sorghum); border-radius: var(--radius); padding: .9rem 1rem; }
+.step-card h3 { margin: .2rem 0 .4rem; }
+.step-card ul { padding-left: 1.1rem; margin: 0 0 .5rem; }
+.support-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-top: .5rem; }
+.support-grid h3 { margin-bottom: .2rem; }
+.stack-s { display: grid; gap: .5rem; }
+@media (max-width: 700px) { .dev-hero { grid-template-columns: 1fr; } }
+.idbox { border: 1px solid var(--line); border-radius: var(--radius); padding: .8rem 1rem .2rem; margin: .4rem 0 1rem; }
+.idbox legend { font-weight: 700; padding: 0 .3rem; }

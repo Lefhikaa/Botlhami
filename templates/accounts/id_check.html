@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block title %}Check identity{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Check identity</h1><p class="muted">{{ person.first_name }} {{ person.last_name }} · {{ person.email }}</p></div><a class="btn btn-sm" href="{% url 'accounts:id_queue' %}">← Back</a></div>
+<div class="detail">
+  <section class="card"><h2>Their details</h2>
+    <dl class="kv"><dt>Name</dt><dd>{{ person.first_name }} {{ person.last_name }}</dd><dt>Omang</dt><dd>{{ person.omang_masked }} <span class="small muted">(only the last 4 digits are kept)</span></dd>
+      <dt>Phone</dt><dd>{{ person.phone|default:"—" }}</dd><dt>Registered</dt><dd>{{ person.date_joined|date:"j M Y" }}</dd></dl>
+    {% if person.id_document %}<p><a class="btn" href="{% url 'accounts:id_document' person.pk %}" target="_blank" rel="noopener">Open the Omang copy</a></p>{% endif %}
+    <p class="small muted">Check: the name matches, the last 4 digits match, the photo is clear and the card is current.</p>
+  </section>
+  <form method="post" class="card" novalidate>{% csrf_token %}<h2>Decision</h2>
+    {% include "_form_errors.html" %}
+    {% include "_field.html" with field=form.decision %}{% include "_field.html" with field=form.note %}
+    <button class="btn btn-primary btn-block">Save</button>
+  </form>
+</div>
+{% endblock %}

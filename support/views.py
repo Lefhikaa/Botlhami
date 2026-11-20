@@ -74,7 +74,8 @@ def my_tickets(request):
 
 @login_required
 def new_ticket(request):
-    form = TicketForm(request.POST or None)
+    initial = {"subject": request.GET.get("subject", "")[:150], "area": request.GET.get("area", "")}
+    form = TicketForm(request.POST or None, initial={k: v for k, v in initial.items() if v})
     if request.method == "POST" and form.is_valid():
         t = form.save(commit=False)
         t.raised_by = request.user

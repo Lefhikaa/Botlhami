@@ -71,6 +71,9 @@ def submit(idea, actor):
     missing = idea.missing_items()
     if missing:
         raise WorkflowError("Complete these items first: " + ", ".join(missing))
+    if not actor.identity_ready:
+        raise WorkflowError("Before you submit, add your Omang and a copy of your card under Profile → Your identity. "
+                            "Your draft is saved.")
     if idea.status == Status.REVISION:
         return _resubmit(idea, actor)
     idea.set_status(Status.SUBMITTED, actor)
@@ -246,9 +249,26 @@ def decide(idea, adjudicator, outcome, reason):
     if outcome == Status.REVISION:
         Message.objects.create(idea=idea, author=adjudicator, body=reason.strip())
     notify([idea.submitter], msg.format(ref=idea.reference, title=idea.title), idea)
+    if outcome == Status.REJECTED:
+        notify([idea.submitter], f"Your development report and certificate for {idea.reference} are ready: "
+                                 "your scores, what to improve and the support you can still get.", idea)
     notify([a.evaluator for a in idea.active_assignments()], f"Outcome for {idea.reference}: {idea.get_status_display()}.", idea)
     if outcome == Status.APPROVED:
         notify(users_with_role(Role.ADMIN), f"{idea.reference} is approved and waiting for an award.", idea)
+
+
+def start_new_version(idea, actor):
+    """Copy a declined idea into a new draft, so the applicant can improve it for the next call."""
+    if actor.pk != idea.submitter_id:
+        raise WorkflowError("Only the applicant can start a new version.")
+    if idea.status != Status.REJECTED:
+        raise WorkflowError("Only declined ideas can be started again.")
+    copy_fields = ["title", "sector", "maturity", "location", "problem", "solution", "beneficiaries", "impact", "jobs",
+                   "budget", "sdgs", "team", "capacity_skills", "capacity_resources", "capacity_partners", "capacity_gaps",
+                   "capacity_governance"]
+    new = Idea.objects.create(submitter=idea.submitter, **{f: getattr(idea, f) for f in copy_fields})
+    record("idea.new_version", target=new.reference, actor=actor, detail=f"Based on {idea.reference}")
+    return new
 
 
 # What follows an award: a short, standard implementation plan the officer can then adjust.
@@ -280,6 +300,8 @@ def grant_award(idea, actor, category, message, amount=None, officer=None):
         raise WorkflowError("Only approved ideas can receive an award.")
     if not message.strip():
         raise WorkflowError("Add a message to the applicant.")
+    if idea.submitter.id_status != idea.submitter.IdStatus.VERIFIED:
+        raise WorkflowError("The applicant's Omang must be verified before an award. Check it under ID checks.")
     if officer and not officer.has_role(Role.ADMIN, Role.CONSULTANT, Role.ADJUDICATOR):
         raise WorkflowError("The CEDA officer must be a CEDA staff member.")
     with transaction.atomic():

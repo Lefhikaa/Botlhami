@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Identity checks{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Identity checks</h1><p class="muted">Compare each uploaded Omang with the applicant's details. Opening a card is recorded in the audit trail.</p></div></div>
+<section class="card"><h2>Waiting ({{ pending|length }})</h2>
+{% if pending %}<table class="table"><thead><tr><th>Applicant</th><th>Omang</th><th>Registered</th><th></th></tr></thead><tbody>
+{% for p in pending %}<tr><td><strong>{{ p.first_name }} {{ p.last_name }}</strong><div class="small muted">{{ p.email }}</div></td><td>{{ p.omang_masked }}</td><td>{{ p.date_joined|date:"j M Y" }}</td><td class="actions"><a class="btn btn-sm btn-primary" href="{% url 'accounts:id_check' p.pk %}">Check</a></td></tr>{% endfor %}
+</tbody></table>{% else %}<p class="ok">✓ Nothing waiting.</p>{% endif %}
+</section>
+<section class="card mt"><h2>Recently checked</h2>
+{% if recent %}<table class="table"><tbody>{% for p in recent %}<tr><td>{{ p.first_name }} {{ p.last_name }}</td><td>{{ p.omang_masked }}</td><td>{% if p.id_status == "verified" %}<span class="pill s-approved">Verified</span>{% else %}<span class="pill s-rejected">{{ p.get_id_status_display }}</span>{% endif %}</td><td class="small muted">{{ p.id_checked_at|date:"j M H:i" }} · {{ p.id_checked_by.first_name }}</td></tr>{% endfor %}</tbody></table>{% else %}<p class="muted">None yet.</p>{% endif %}
+</section>
+{% endblock %}
