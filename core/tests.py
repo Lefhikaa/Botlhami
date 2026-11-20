@@ -67,3 +67,18 @@ class AzureEmailBackendTests(TestCase):
             self.assertEqual(payload["senderAddress"], "DoNotReply@x.azurecomm.net")
             self.assertEqual(payload["content"]["html"], "<p>html</p>")
             self.assertEqual(payload["recipients"]["to"], [{"address": "a@example.bw"}])
+
+
+class HomePageTests(TestCase):
+    def test_home_shows_live_platform_figures(self):
+        from accounts.models import Role, User
+        from ideas.models import Idea, Status
+
+        u = User.objects.create_user(email="a@x.bw", password="Pass-word-123", role=Role.SUBMITTER)
+        Idea.objects.create(submitter=u, title="Draft only")  # drafts aren't counted
+        Idea.objects.create(submitter=u, title="Awarded", status=Status.AWARDED, jobs=9)
+        Idea.objects.create(submitter=u, title="In review", status=Status.IN_REVIEW)
+        r = self.client.get("/")
+        self.assertContains(r, "Where ideas become innovation.")
+        self.assertEqual(r.context["stats"], {"submitted": 2, "review": 1, "approved": 1, "awarded": 1, "jobs": 9})
+        self.assertContains(r, "expect to create 9 jobs")

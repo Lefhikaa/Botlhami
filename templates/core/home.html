@@ -1,34 +1,68 @@
-{% extends "base.html" %}{% load static %}{% block title %}Welcome{% endblock %}
+{% extends "base.html" %}{% load static brand %}{% block title %}Where ideas become innovation{% endblock %}
+{% block main_class %}home{% endblock %}
 {% block content %}
-<section class="hero">
-  <div class="hero-copy">
-    <h1>Your idea, from first draft to award</h1>
-    <p>{{ SITE_NAME }} is where Botswana's innovators bring ideas to CEDA. Independent experts review every idea, you get feedback at each step, and you can always see where yours stands.</p>
-    <div class="row">
-      {% if user.is_authenticated %}<a class="btn btn-primary" href="{% url 'core:dashboard' %}">Go to my dashboard</a>
-      {% else %}<a class="btn btn-primary" href="{% url 'accounts:register' %}">Submit an idea</a>
-      <a class="btn" href="{% url 'accounts:login' %}">Sign in</a>{% endif %}
+<section class="home-hero">
+  <div class="home-hero-inner">
+    <div class="home-hero-copy">
+      <p class="wordmark"><img src="{% static 'img/botlhami-mark.svg' %}" alt="" width="30" height="30">Botlhami</p>
+      <h1>Where ideas become innovation.</h1>
+      <p class="lede">A smarter way to turn Botswana's brightest ideas into solutions that create opportunities, transform communities and drive economic growth.</p>
+      <div class="row">
+        <a class="btn btn-primary" href="{% url 'accounts:register' %}">Submit your innovation</a>
+        <a class="btn" href="#ecosystem">Explore the innovation ecosystem</a>
+      </div>
+      <p class="home-signin small">Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a></p>
     </div>
-  </div>
-  <div class="hero-weave">
-    <div class="hero-partner">
-      <img src="{% static 'img/ceda-logo-tagline.png' %}" alt="CEDA: Finance, Develop, Sustain" width="75" height="46">
-      <span>The innovation stream for CEDA's <strong>#KaeKapaKae</strong> platform.</span>
-    </div>
+    <figure class="home-hero-art">
+      {% medallion %}
+      <figcaption class="transform">
+        <span>{% glyph 1 %}An idea</span>
+        <span>{% glyph 2 %}Expert review</span>
+        <span>{% glyph 3 %}A real solution</span>
+      </figcaption>
+    </figure>
   </div>
 </section>
 
-<ol class="journey" aria-label="How it works">
-  <li><strong>Submission</strong><span>Describe your idea and upload your documents. Save a draft whenever you like.</span></li>
-  <li><strong>Review</strong><span>Two independent evaluators score it, without seeing your name.</span></li>
-  <li><strong>Feedback</strong><span>Read their comments, answer questions, or improve it and resubmit.</span></li>
-  <li><strong>Approval</strong><span>CEDA's adjudication panel makes the final decision.</span></li>
-  <li><strong>Award</strong><span>Funding referral, incubation, recognition or a pilot with CEDA.</span></li>
-</ol>
+<section class="home-stats" aria-label="Botlhami in numbers">
+  <div class="home-stats-inner">
+    <div><strong>{{ stats.submitted }}</strong><span>Ideas submitted</span></div>
+    <div><strong>{{ stats.review }}</strong><span>Under review</span></div>
+    <div><strong>{{ stats.approved }}</strong><span>Approved</span></div>
+    <div><strong>{{ stats.awarded }}</strong><span>Awarded and in development</span></div>
+  </div>
+  <p class="home-stats-note">{% if stats.jobs %}Approved ideas expect to create {{ stats.jobs }} job{{ stats.jobs|pluralize }}. {% endif %}Figures are live from the platform.</p>
+</section>
 
-<div class="home-help">
-  <a href="{% url 'support:documents' %}"><strong>Forms and documents</strong><span>The application form, templates and what to upload.</span></a>
-  <a href="{% url 'support:help' %}"><strong>Questions and contacts</strong><span>Answers to common questions, and which regulator to call.</span></a>
-  <a href="{% url 'chat:client' %}"><strong>Talk to CEDA</strong><span>Live chat from 09:00 to 16:00 on working days.</span></a>
+<div class="container home-body" id="ecosystem">
+  <section>
+    <h2 class="home-h2">The innovation ecosystem</h2>
+    <p class="home-intro">Every idea follows the same open, fair path, and you can see where yours is at every step.</p>
+    <ol class="journey" aria-label="How it works">
+      <li><strong>Submission</strong><span>Describe your idea and upload your documents. Save a draft whenever you like.</span></li>
+      <li><strong>Review</strong><span>Independent evaluators score it against six published criteria, without seeing your name.</span></li>
+      <li><strong>Feedback</strong><span>Read their comments, answer questions, or improve it and resubmit.</span></li>
+      <li><strong>Approval</strong><span>CEDA's adjudication panel decides, guided by an explained recommendation.</span></li>
+      <li><strong>Award</strong><span>Funding referral, incubation, recognition or a pilot with CEDA.</span></li>
+    </ol>
+  </section>
+
+  <section class="people">
+    <div><h3>Innovators</h3><p>Citizens and businesses with an idea, from a first concept to a working pilot.</p></div>
+    <div><h3>Independent evaluators</h3><p>Experts who score each idea separately, declare any conflict of interest and never see each other's scores.</p></div>
+    <div><h3>CEDA's adjudication panel</h3><p>Makes the final decision and grants awards, with every step recorded.</p></div>
+    <div><h3>Regulators and partners</h3><p>CIPA, BURS, BOBS, BOCRA and others, with contacts in the <a href="{% url 'support:help' %}">help centre</a>.</p></div>
+  </section>
+
+  <div class="home-help">
+    <a href="{% url 'support:documents' %}"><strong>Forms and documents</strong><span>The application form, templates and what to upload.</span></a>
+    <a href="{% url 'support:help' %}"><strong>Questions and contacts</strong><span>Answers to common questions, and which regulator to call.</span></a>
+    <a href="{% url 'chat:client' %}"><strong>Talk to CEDA</strong><span>Live chat from 09:00 to 16:00 on working days.</span></a>
+  </div>
+
+  <section class="home-partner">
+    <img src="{% static 'img/ceda-logo-tagline.png' %}" alt="CEDA: Finance, Develop, Sustain" width="104" height="64">
+    <p>Botlhami is the innovation stream for CEDA's <strong>#KaeKapaKae</strong> platform, built to help citizen innovators turn ideas into businesses.</p>
+  </section>
 </div>
 {% endblock %}

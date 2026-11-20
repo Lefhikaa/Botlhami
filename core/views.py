@@ -5,7 +5,26 @@ from django.shortcuts import redirect, render
 def home(request):
     if request.user.is_authenticated:
         return redirect("core:dashboard")
-    return render(request, "core/home.html")
+    return render(request, "core/home.html", {"stats": platform_stats()})
+
+
+def platform_stats():
+    """Live counts for the home page. Drafts aren't counted: they haven't been submitted yet."""
+    from django.db.models import Count, Q, Sum
+
+    from ideas.models import Idea, Status
+
+    under_review = (Status.SUBMITTED, Status.IN_REVIEW, Status.ADJUDICATION, Status.REVISION)
+    approved = (Status.APPROVED, Status.AWARDED)
+    agg = Idea.objects.exclude(status=Status.DRAFT).aggregate(
+        submitted=Count("id"),
+        review=Count("id", filter=Q(status__in=under_review)),
+        approved=Count("id", filter=Q(status__in=approved)),
+        awarded=Count("id", filter=Q(status=Status.AWARDED)),
+        jobs=Sum("jobs", filter=Q(status__in=approved)),
+    )
+    agg["jobs"] = agg["jobs"] or 0
+    return agg
 
 
 HOME_BY_ROLE = {
