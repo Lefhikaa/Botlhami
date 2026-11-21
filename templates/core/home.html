@@ -14,7 +14,12 @@
       <p class="home-signin small">Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a></p>
     </div>
     <figure class="home-hero-art">
-      {% medallion %}
+      <div class="hero-photo">
+        <span class="hero-block" aria-hidden="true"></span>
+        <img src="{% static 'img/photos/hero-tailor.webp' %}" alt="A tailor at work at his sewing machine" width="780" height="700" fetchpriority="high">
+        <span class="hero-medal" aria-hidden="true">{% medallion %}</span>
+        <p class="hero-float"><span class="hero-float-dot" aria-hidden="true"></span><span><strong>{{ stats.review }}</strong> idea{{ stats.review|pluralize }} under review right now</span></p>
+      </div>
       <figcaption class="transform">
         <span>{% glyph 1 %}An idea</span>
         <span>{% glyph 2 %}Expert review</span>
@@ -32,6 +37,19 @@
     <div><strong>{{ stats.awarded }}</strong><span>Awarded and in development</span></div>
   </div>
   <p class="home-stats-note">{% if stats.jobs %}Approved ideas expect to create {{ stats.jobs }} job{{ stats.jobs|pluralize }}. {% endif %}Figures are live from the platform.</p>
+</section>
+
+<section class="container home-body who" aria-labelledby="who-h">
+  <h2 class="home-h2" id="who-h">Built for Botswana's innovators</h2>
+  <p class="home-intro">Whatever you make, grow or build, if it's new and it could grow, Botlhami is the way in.</p>
+  <div class="who-grid">
+    <figure class="who-card"><div class="who-img who-sorghum"><img src="{% static 'img/photos/farmer.webp' %}" alt="A farmer walking through a field of tall crops" width="780" height="520" loading="lazy"></div>
+      <figcaption><strong>Farmers and agro-processors</strong><span>From cattle traceability to cold storage for horticulture.</span></figcaption></figure>
+    <figure class="who-card"><div class="who-img who-ember"><img src="{% static 'img/photos/maker.webp' %}" alt="A young woman in overalls holding a tablet in a workshop" width="624" height="416" loading="lazy"></div>
+      <figcaption><strong>Makers and manufacturers</strong><span>Workshops, textiles and small factories ready to grow.</span></figcaption></figure>
+    <figure class="who-card"><div class="who-img who-crimson"><img src="{% static 'img/photos/tech.webp' %}" alt="A young woman working with a digital map on a screen" width="780" height="520" loading="lazy"></div>
+      <figcaption><strong>Tech and digital founders</strong><span>Apps, platforms and services built for Botswana.</span></figcaption></figure>
+  </div>
 </section>
 
 <div class="container home-body" id="ecosystem">

@@ -1,5 +1,7 @@
 {% extends "base.html" %}{% block title %}Create an account{% endblock %}
-{% block content %}
+{% block content %}{% load static %}
+<div class="auth-split">
+<aside class="auth-photo" aria-hidden="true"><img src="{% static 'img/photos/team.webp' %}" alt="" width="600" height="675"><p>Join the innovators turning ideas into businesses.</p></aside>
 <section class="card narrow">
   <h1>Create an account</h1>
   <p class="muted">Register to submit ideas and track them. We'll email you a code to verify your address.</p>
@@ -21,4 +23,5 @@
   </form>
   <p class="muted small center">Already registered? <a href="{% url 'accounts:login' %}">Sign in</a></p>
 </section>
+</div>
 {% endblock %}

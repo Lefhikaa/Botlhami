@@ -1,5 +1,7 @@
 {% extends "base.html" %}{% block title %}Sign in{% endblock %}
-{% block content %}
+{% block content %}{% load static %}
+<div class="auth-split">
+<aside class="auth-photo" aria-hidden="true"><img src="{% static 'img/photos/team.webp' %}" alt="" width="600" height="675"><p>Welcome back. Pick up where you left off.</p></aside>
 <section class="card narrow">
   <h1>Sign in</h1>
   <form method="post" novalidate>{% csrf_token %}
@@ -13,4 +15,5 @@
   <a class="btn btn-block" href="{% url 'accounts:code_request' %}">Email me a one-time sign-in code</a>
   <p class="small center"><a href="{% url 'accounts:password_reset' %}">Forgot your password?</a> · <a href="{% url 'accounts:register' %}">Create an account</a></p>
 </section>
+</div>
 {% endblock %}
