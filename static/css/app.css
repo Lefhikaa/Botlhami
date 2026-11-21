@@ -745,3 +745,13 @@ html[data-theme] .sidebar .sb-search input#sb-q { background: transparent; borde
 @media (prefers-reduced-motion: reduce) { .hero-float-dot { animation: none; } }
 .meter-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .15rem 1rem; }
 .error-page { margin-top: 3rem; } .error-page img { margin: 0 auto .5rem; display: block; }
+
+/* --- Page loading --- */
+#page-loader { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 1000; transform-origin: left; transform: scaleX(0); background: linear-gradient(90deg, var(--brand), var(--accent) 60%, var(--sorghum)); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 60%, transparent); transition: transform .25s ease, opacity .3s ease; pointer-events: none; }
+#page-loader[hidden] { display: none; }
+#page-loader.done { opacity: 0; transition: transform .15s ease, opacity .3s ease .1s; }
+[data-loading] { position: relative; color: transparent !important; pointer-events: none; }
+[data-loading]::after { content: ""; position: absolute; left: 50%; top: 50%; width: 1.05em; height: 1.05em; margin: -.525em 0 0 -.525em; border-radius: 50%; border: 2px solid currentColor; border-color: var(--spin, #fff) var(--spin, #fff) transparent transparent; animation: spin .7s linear infinite; }
+.btn:not(.btn-primary):not(.btn-ok):not(.btn-bad)[data-loading], .sb-item[data-loading], .linklike[data-loading] { --spin: var(--ink-muted); }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { #page-loader { transition: none; } [data-loading]::after { animation-duration: 1.6s; } }

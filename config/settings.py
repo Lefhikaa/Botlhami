@@ -143,6 +143,7 @@ SESSION_COOKIE_AGE = 60 * 60 * 8  # 8 hours
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_FAILURE_VIEW = "core.views.csrf_failure"  # a Botlhami-styled "page expired" screen
 X_FRAME_OPTIONS = "DENY"
 
 if not DEBUG:

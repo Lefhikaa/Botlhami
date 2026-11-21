@@ -2,7 +2,7 @@
 {% block content %}
 <div class="page-head"><div><h1>Reports</h1><p class="muted">Participation, outcomes and timelines · {{ r.period_label }} · generated {{ generated|date:"j M Y, H:i" }}</p></div>
 <div class="row no-print">{% for d, label in r.periods.items %}<a class="btn btn-sm{% if r.days == d %} btn-primary{% endif %}" href="?days={{ d }}">{{ label }}</a>{% endfor %}
-<a class="btn btn-sm" href="{% url 'reports:export' %}?days={{ r.days }}">⬇ Export CSV</a></div></div>
+<a class="btn btn-sm" href="{% url 'reports:export' %}?days={{ r.days }}" download data-no-loader>⬇ Export CSV</a></div></div>
 
 <div class="kpis">
   <div class="card kpi"><span class="muted small">Ideas submitted</span><strong>{{ r.kpi.submitted }}</strong><span class="small muted">from {{ r.kpi.submitting_applicants }} applicant{{ r.kpi.submitting_applicants|pluralize }}</span></div>

@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
@@ -89,3 +90,21 @@ def search(request):
         faqs = list(FAQ.objects.filter(published=True).filter(Q_(question__icontains=q) | Q_(answer__icontains=q))[:10])
         docs = list(Resource.objects.filter(published=True).filter(Q_(title__icontains=q) | Q_(description__icontains=q))[:10])
     return render(request, "core/search.html", {"q": q, "ideas": ideas, "faqs": faqs, "docs": docs})
+
+
+def csrf_failure(request, reason=""):
+    """A form was sent with an out-of-date security token.
+
+    Usually harmless: the page sat open a long time, the person signed in or out
+    in another tab, or the browser restored an old copy of the page. Explain it
+    plainly and offer a fresh copy of the same page.
+    """
+    from audit.log import record
+
+    record("security.form_expired", target=request.path[:120], request=request, detail=reason[:200])
+    # Signed in on another tab, then pressed "Sign in" on an old copy: nothing to do.
+    if request.user.is_authenticated and request.path.rstrip("/").endswith("/accounts/login"):
+        messages.info(request, "You're already signed in.")
+        return redirect("core:dashboard")
+    retry = request.path if request.method == "POST" else "/"
+    return render(request, "403_csrf.html", {"retry": retry}, status=403)

@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}This page had expired{% endblock %}
+{% block content %}
+<section class="card narrow center error-page">
+  <h1>This page had expired</h1>
+  <p>For your security, forms on Botlhami only work for a while after the page is opened. Nothing was saved.</p>
+  <p class="muted small">This usually happens when a page is left open for a long time, when you sign in or out in another tab, or when your browser shows an old copy of the page.</p>
+  <p><a class="btn btn-primary" href="{{ retry }}">Open a fresh copy and try again</a></p>
+  {% if retry == "/accounts/login/" %}<p class="small muted">If it keeps happening, check that cookies are allowed for this site.</p>{% endif %}
+</section>
+{% endblock %}

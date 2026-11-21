@@ -126,3 +126,25 @@ class SidebarTests(TestCase):
         r = self.client.get(reverse("core:search"), {"q": "solar dryer"})
         self.assertContains(r, "Solar dryer mine")
         self.assertNotContains(r, "Solar dryer theirs")
+
+
+class ExpiredFormTests(TestCase):
+    def setUp(self):
+        from django.test import Client
+        self.c = Client(enforce_csrf_checks=True)
+
+    def test_expired_form_gets_a_friendly_page(self):
+        r = self.c.post(reverse("accounts:login"), {"username": "x@example.com", "password": "nope"})
+        self.assertEqual(r.status_code, 403)
+        self.assertContains(r, "This page had expired", status_code=403)
+        self.assertContains(r, 'href="/accounts/login/"', status_code=403)
+
+    def test_already_signed_in_is_sent_to_dashboard(self):
+        from accounts.models import Role, User
+        u = User.objects.create_user("in@example.com", "x-Pass-12345", role=Role.ADMIN, email_verified=True)
+        self.c.force_login(u)
+        r = self.c.post(reverse("accounts:login"), {"username": "in@example.com", "password": "x"})
+        self.assertEqual(r.status_code, 302)
+
+    def test_pages_load_the_loading_script(self):
+        self.assertContains(self.client.get(reverse("support:help")), "js/loading.js")
