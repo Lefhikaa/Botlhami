@@ -64,6 +64,7 @@ Open the web app and go to **Settings → Environment variables → App settings
 | `SITE_URL` | `https://botlhami-saxum.azurewebsites.net` |
 | `DATABASE_URL` | `postgres://botlhamiadmin:YOUR_PASSWORD@botlhami-db.postgres.database.azure.com:5432/botlhami?sslmode=require` |
 | `MEDIA_ROOT` | `/home/data/media` |
+| `OMANG_PEPPER` | A second long random string, made the same way as `SECRET_KEY`. **Never change it once people have registered**, or their stored Omang numbers will stop matching |
 | `SCM_DO_BUILD_DURING_DEPLOYMENT` | `true` |
 
 Then go to **Settings → Configuration → General settings**:
