@@ -7,7 +7,7 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
-TEAL_LIGHT, EMBER, SORGHUM, CRIMSON, WHITE = "#2a7383", "#f26725", "#faa61c", "#9f2421", "#ffffff"
+UMBER, EMBER, SORGHUM, CRIMSON, WHITE = "#5c2a22", "#f26725", "#faa61c", "#9f2421", "#ffffff"
 
 
 @lru_cache(maxsize=4)
@@ -54,10 +54,10 @@ def _medallion(rings=5, side=34):
         elif ring == 3:
             colour = WHITE if up else SORGHUM
         else:
-            colour = TEAL_LIGHT if up else WHITE
+            colour = UMBER if up else WHITE
         poly = " ".join(f"{x + c:.1f},{y + c:.1f}" for x, y in pts)
         shimmer = " s" if ring == rings - 1 and i % 7 == 0 else ""
-        out.append(f'<polygon points="{poly}" fill="{colour}" stroke="#134e5a" stroke-width="1.6" stroke-linejoin="round" class="t r{ring}{shimmer}" style="--i:{i}"/>')
+        out.append(f'<polygon points="{poly}" fill="{colour}" stroke="#6e1715" stroke-width="1.6" stroke-linejoin="round" class="t r{ring}{shimmer}" style="--i:{i}"/>')
     return (f'<svg class="medallion" viewBox="0 0 {size:.0f} {size:.0f}" xmlns="http://www.w3.org/2000/svg" '
             f'role="img" aria-label="A single triangle growing into a woven medallion: an idea becoming a solution">'
             + "".join(out) + "</svg>")
@@ -81,7 +81,7 @@ def glyph(stage):
         pts = [(12 + 10 * cos(pi / 3 * k - pi / 2), 12 + 10 * sin(pi / 3 * k - pi / 2)) for k in range(6)]
         body = "".join(
             f'<polygon points="12,12 {pts[k][0]:.1f},{pts[k][1]:.1f} {pts[(k + 1) % 6][0]:.1f},{pts[(k + 1) % 6][1]:.1f}" '
-            f'fill="{(SORGHUM, EMBER, CRIMSON)[k % 3]}" stroke="#134e5a" stroke-width="0.8"/>' for k in range(6))
+            f'fill="{(SORGHUM, EMBER, CRIMSON)[k % 3]}" stroke="#6e1715" stroke-width="0.8"/>' for k in range(6))
     return mark_safe(f'<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">{body}</svg>')
 
 

@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Botlhami">
-  <rect width="64" height="64" rx="14" fill="#134e5a"/>
+  <rect width="64" height="64" rx="14" fill="#9f2421"/>
   <!-- a woven diamond, after the triangle motifs of Botswana basketry -->
   <path d="M32 10 L46 24 H18 Z" fill="#faa61c"/>
   <path d="M46 24 L54 32 L46 40 Z" fill="#f26725"/>
   <path d="M18 24 L10 32 L18 40 Z" fill="#f26725"/>
   <path d="M18 40 H46 L32 54 Z" fill="#faa61c"/>
   <path d="M18 24 H46 V40 H18 Z" fill="#ffffff"/>
-  <path d="M24 32 L32 26 L40 32 L32 38 Z" fill="#134e5a"/>
+  <path d="M24 32 L32 26 L40 32 L32 38 Z" fill="#9f2421"/>
 </svg>

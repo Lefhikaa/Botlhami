@@ -1,22 +1,23 @@
 /* Botlhami base styles.
-   Palette: Okavango teal for Botlhami itself, with the sun colours of CEDA's
-   logo (ember, sorghum, crimson) as accents. The woven triangle band comes from
+   Palette: CEDA warm. CEDA's own logo colours lead: crimson for Botlhami
+   itself, with ember and sorghum as accents and a warm umber ink. The woven triangle band comes from
    the patterns of Botswana basketry. */
 :root {
-  --brand: #134e5a;          /* Okavango teal */
-  --brand-deep: #0d3a43;
+  --brand: #9f2421;          /* CEDA crimson */
+  --brand-deep: #7a1b19;
   --brand-contrast: #ffffff;
   --accent: #f26725;         /* CEDA ember */
   --sorghum: #faa61c;        /* CEDA amber */
-  --crimson: #9f2421;        /* CEDA crimson, for the weave only */
-  --ink: #1c2329;
-  --ink-muted: #56626c;
-  --line: #dde2e6;
+  --crimson: #9f2421;        /* CEDA crimson */
+  --umber: #3a2a26;
+  --ink: #261a17;
+  --ink-muted: #6b5a54;
+  --line: #e9dfd9;
   --surface: #ffffff;
-  --page: #f4f6f6;
+  --page: #f7f3f0;
   --ok: #1e7a4c;
   --warn: #9a6312;
-  --error: #b3261e;
+  --error: #c8203f;          /* a cooler red, so errors never read as the brand */
   --radius: 10px;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
@@ -222,7 +223,7 @@ form.card fieldset + fieldset { border-top: 1px solid var(--line); padding-top: 
 
 .container.wide { max-width: 1400px; }
 .board { display: grid; grid-template-columns: repeat(7, minmax(170px, 1fr)); gap: .75rem; overflow-x: auto; padding-bottom: .5rem; }
-.col { background: #eceef0; border-radius: 10px; padding: .6rem; min-height: 180px; }
+.col { background: #f1eae6; border-radius: 10px; padding: .6rem; min-height: 180px; }
 .col-head { display: flex; justify-content: space-between; align-items: flex-start; gap: .4rem; font-size: .85rem; margin: .2rem .2rem .6rem; color: var(--ink-muted); }
 .col-head .badge { flex: none; line-height: 1.4; }
 .mini { display: grid; gap: .15rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: .55rem .65rem; margin-bottom: .5rem; text-decoration: none; color: var(--ink); font-size: .88rem; }
@@ -368,7 +369,7 @@ h3 { font-size: 1.02rem; margin: 0 0 .25rem; }
 
 /* --- home page --- */
 main.home { flex: 1; width: 100%; }
-.home-hero { position: relative; background: var(--brand); color: var(--brand-contrast); overflow: hidden; isolation: isolate; }
+.home-hero { position: relative; background: var(--brand-deep); color: var(--brand-contrast); overflow: hidden; isolation: isolate; }
 .home-hero::before { content: ""; position: absolute; inset: -60px; background: url("../img/weave.svg") repeat 0 0 / 72px 72px; opacity: .07; z-index: -1; animation: drift 90s linear infinite; }
 @keyframes drift { to { background-position: 720px 360px; } }
 .home-hero-inner { max-width: 1180px; margin: 0 auto; padding: 4.5rem 1.5rem 7rem; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 3rem; align-items: center; }
@@ -521,23 +522,23 @@ button.chip:hover { border-color: var(--brand); }
 :root { --brand-ink: var(--brand); --field: #fff; }
 
 /* --- Dark mode ---
-   Its own steps, not an inversion: a deep Okavango night for the page, a
-   lighter teal for text and links, and the CEDA sun colours kept as they are.
-   Fills that carry white text keep a teal dark enough for contrast. */
+   Its own steps, not an inversion: a warm near-black for the page, a soft
+   ember for text and links, and the CEDA sun colours kept as they are.
+   Fills that carry white text keep a crimson dark enough for contrast. */
 html[data-theme="dark"] {
   color-scheme: dark;
-  --brand: #1b6a79;
-  --brand-ink: #7fcad6;
-  --brand-deep: #0b2a31;
-  --ink: #e4eaec;
-  --ink-muted: #9fb0b7;
-  --line: #2c3d43;
-  --surface: #16242a;
-  --page: #0e181c;
-  --field: #0f1d22;
+  --brand: #a92a26;
+  --brand-ink: #f5a088;
+  --brand-deep: #3d1412;
+  --ink: #f2e9e5;
+  --ink-muted: #bba79f;
+  --line: #3d2e2a;
+  --surface: #221917;
+  --page: #161010;
+  --field: #1b1412;
   --ok: #5cc28f;
   --warn: #e9b25a;
-  --error: #f08a84;
+  --error: #ff7d93;
 }
 html[data-theme="dark"] a,
 html[data-theme="dark"] .linklike,
@@ -566,7 +567,7 @@ html[data-theme="dark"] .field input:focus, html[data-theme="dark"] .field selec
 html[data-theme="dark"] .scale label:has(input:checked),
 html[data-theme="dark"] .sev-choice:has(input:checked) { background: color-mix(in srgb, var(--brand-ink) 14%, var(--surface)); border-color: var(--brand-ink); color: var(--ink); }
 html[data-theme="dark"] .ms-in_progress .ms-dot { background: color-mix(in srgb, var(--brand-ink) 30%, var(--surface)); border-color: var(--brand-ink); }
-html[data-theme="dark"] .col { background: #132026; }
+html[data-theme="dark"] .col { background: #1e1614; }
 
 /* Tinted pills, chips and notices: same meaning, night-time steps. */
 html[data-theme="dark"] :is(.s-draft, .sev-low, .v-waiting, .ms-pill-planned) { background: #263238; color: #c3ccd1; }
@@ -602,15 +603,15 @@ html[data-theme="dark"] .radar [stroke="#eb6834"] { stroke: #d95926; } html[data
 html[data-theme="dark"] .radar [stroke="#1baf7a"] { stroke: #199e70; } html[data-theme="dark"] .radar [fill="#1baf7a"] { fill: #199e70; } html[data-theme="dark"] .sw[style*="1baf7a"] { border-top-color: #199e70; }
 html[data-theme="dark"] .radar [stroke="#eda100"] { stroke: #c98500; } html[data-theme="dark"] .radar [fill="#eda100"] { fill: #c98500; } html[data-theme="dark"] .sw[style*="eda100"] { border-top-color: #c98500; }
 html[data-theme="dark"] .radar [stroke="#e87ba4"] { stroke: #d55181; } html[data-theme="dark"] .radar [fill="#e87ba4"] { fill: #d55181; } html[data-theme="dark"] .sw[style*="e87ba4"] { border-top-color: #d55181; }
-html[data-theme="dark"] :is(.home-hero, .hero) { background: #134e5a; }
+html[data-theme="dark"] :is(.home-hero, .hero) { background: #7a1b19; }
 .topbar-left { flex: none; }
 .topnav { gap: .65rem; justify-content: flex-end; }
 @media (min-width: 901px) { .topbar { gap: .75rem; } .theme-toggle { width: 1.9rem; height: 1.9rem; font-size: .9rem; } }
 html[data-theme="dark"] :is(select, textarea, input:not([type=checkbox]):not([type=radio]):not([type=submit])) { background: var(--field); color: var(--ink); border-color: var(--line); }
 
 /* --- Signed-in app shell: left sidebar --- */
-:root { --sb-bg: #f7f8f8; --sb-active: #ffffff; --sb-w: 272px; }
-html[data-theme="dark"] { --sb-bg: #111d21; --sb-active: #1c2c32; }
+:root { --sb-bg: #fbf8f6; --sb-active: #ffffff; --sb-w: 272px; }
+html[data-theme="dark"] { --sb-bg: #1a1311; --sb-active: #2b201d; }
 body.has-sidebar { flex-direction: row; }
 .shell { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 100vh; }
 .shell > .container { flex: 1; }

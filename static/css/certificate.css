@@ -1,22 +1,22 @@
 * { box-sizing: border-box; }
-body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #1c2329; background: #eef1f1; }
-.toolbar { display: flex; gap: 1rem; justify-content: space-between; flex-wrap: wrap; padding: .8rem 1.2rem; font-size: .9rem; color: #56626c; }
-.toolbar a { color: #134e5a; font-weight: 600; }
-.cert { max-width: 980px; margin: 0 auto 2rem; background: #fff; padding: 0 3.2rem; border: 1px solid #dde2e6; text-align: center; }
+body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #261a17; background: #eef1f1; }
+.toolbar { display: flex; gap: 1rem; justify-content: space-between; flex-wrap: wrap; padding: .8rem 1.2rem; font-size: .9rem; color: #6b5a54; }
+.toolbar a { color: #9f2421; font-weight: 600; }
+.cert { max-width: 980px; margin: 0 auto 2rem; background: #fff; padding: 0 3.2rem; border: 1px solid #e9dfd9; text-align: center; }
 .band { height: 14px; margin: 0 -3.2rem; background: url("../img/weave-band.svg") repeat-x left center / auto 14px; }
 header { display: flex; align-items: center; gap: .9rem; text-align: left; padding: 2rem 0 1rem; }
 header div { display: grid; }
-header strong { font-size: 1.4rem; color: #134e5a; }
-header span { font-size: .85rem; color: #56626c; }
+header strong { font-size: 1.4rem; color: #9f2421; }
+header span { font-size: .85rem; color: #6b5a54; }
 header .ceda { margin-left: auto; height: 64px; width: auto; }
 .kicker { margin: 1.5rem 0 .4rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: #f26725; font-size: .95rem; }
 h1 { font-size: 2.6rem; margin: .4rem 0; letter-spacing: -.01em; }
-.lead { color: #56626c; margin: .4rem 0; font-size: 1.05rem; }
-.idea { font-size: 1.45rem; font-weight: 700; color: #134e5a; margin: .6rem auto; max-width: 40ch; }
-footer { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0 1rem; padding-top: 1.2rem; border-top: 1px solid #dde2e6; }
-footer span { display: block; font-size: .8rem; color: #56626c; }
+.lead { color: #6b5a54; margin: .4rem 0; font-size: 1.05rem; }
+.idea { font-size: 1.45rem; font-weight: 700; color: #9f2421; margin: .6rem auto; max-width: 40ch; }
+footer { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0 1rem; padding-top: 1.2rem; border-top: 1px solid #e9dfd9; }
+footer span { display: block; font-size: .8rem; color: #6b5a54; }
 footer strong { font-size: 1rem; }
-.verify { font-size: .8rem; color: #56626c; margin: 0 0 1.8rem; }
+.verify { font-size: .8rem; color: #6b5a54; margin: 0 0 1.8rem; }
 @media print {
   @page { size: A4 landscape; margin: 10mm; }
   body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
