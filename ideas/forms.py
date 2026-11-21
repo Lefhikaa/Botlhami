@@ -78,6 +78,10 @@ class IdeaForm(forms.ModelForm):
         for name, field in self.fields.items():
             field.required = name == "title"
             field.mandatory = name in self.MANDATORY  # shown with an asterisk
+        prompts = {"sector": "Choose a sector", "maturity": "Choose a stage", "location": "Choose a town"}
+        for name, prompt in prompts.items():
+            field = self.fields[name]
+            field.choices = [("", prompt)] + [c for c in field.choices if c[0] != ""]
 
 
 class EvaluationForm(forms.Form):
