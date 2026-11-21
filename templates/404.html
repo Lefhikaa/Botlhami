@@ -1,0 +1,2 @@
+{% extends "base.html" %}{% block title %}Page not found{% endblock %}
+{% block content %}<section class="card narrow center error-page"><h1>We can't find that page</h1><p class="muted">The link may be old, or the page may have moved. Try the search, or start again from the home page.</p><a class="btn btn-primary" href="{% url 'core:dashboard' %}">Go to your dashboard</a></section>{% endblock %}

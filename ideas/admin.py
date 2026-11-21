@@ -40,4 +40,18 @@ class IdeaAdmin(admin.ModelAdmin):
     inlines = [DocumentInline, HistoryInline]
 
 
-admin.site.register(Award)
+@admin.register(Award)
+class AwardAdmin(admin.ModelAdmin):
+    """View only. Awards are granted from the idea page, which also moves the idea
+    to Awarded and sets up its implementation plan; adding one here would not."""
+    list_display = ("idea", "category", "amount", "officer", "granted_by", "granted_at")
+    list_filter = ("category",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

@@ -147,3 +147,43 @@ class NotAwardedAndIdentityTests(TestCase):
         svc.decide(thuto, demo("kefilwe.tau"), Status.APPROVED, "Approved after discussion.")
         with self.assertRaisesMessage(svc.WorkflowError, "must be verified"):
             svc.grant_award(thuto, demo("kefilwe.tau"), "pilot", "Pilot with CEDA.")
+
+
+class LeftoverAwardTests(TestCase):
+    """An award left behind without the idea being marked awarded must not block granting."""
+
+    def test_grant_replaces_a_leftover_award(self):
+        from accounts.models import Role
+        from audit.models import AuditEvent
+        from ideas import services as svc
+        from ideas.models import Award, Idea, Status
+        from ideas.tests import make_user
+        adj = make_user("adj@example.com", Role.ADJUDICATOR)
+        sub = make_user("sub@example.com", Role.SUBMITTER)
+        idea = Idea.objects.create(submitter=sub, title="Leftover", status=Status.APPROVED, reference="IDX-T-1")
+        Award.objects.create(idea=idea, category="champion", message="added by hand", granted_by=adj)
+        svc.grant_award(idea, adj, "seed", "Well done", None)
+        idea.refresh_from_db()
+        self.assertEqual(idea.status, Status.AWARDED)
+        self.assertEqual(Award.objects.get(idea=idea).category, "seed")
+        self.assertTrue(idea.award.milestones.exists())
+        self.assertTrue(AuditEvent.objects.filter(action="award.replaced").exists())
+
+    def test_second_grant_is_refused_politely(self):
+        from accounts.models import Role
+        from ideas import services as svc
+        from ideas.models import Idea, Status
+        from ideas.tests import make_user
+        adj = make_user("adj2@example.com", Role.ADJUDICATOR)
+        sub = make_user("sub2@example.com", Role.SUBMITTER)
+        idea = Idea.objects.create(submitter=sub, title="Twice", status=Status.APPROVED, reference="IDX-T-2")
+        svc.grant_award(idea, adj, "seed", "Well done", None)
+        stale = Idea.objects.get(pk=idea.pk)
+        stale.status = Status.APPROVED  # as if the page was open in a second tab
+        with self.assertRaises(svc.WorkflowError):
+            svc.grant_award(stale, adj, "pilot", "Again", None)
+
+    def test_awards_are_view_only_in_admin(self):
+        from django.contrib.admin.sites import site
+        from ideas.models import Award
+        self.assertFalse(site._registry[Award].has_add_permission(None))

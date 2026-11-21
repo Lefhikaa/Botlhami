@@ -305,6 +305,17 @@ def grant_award(idea, actor, category, message, amount=None, officer=None):
     if officer and not officer.has_role(Role.ADMIN, Role.CONSULTANT, Role.ADJUDICATOR):
         raise WorkflowError("The CEDA officer must be a CEDA staff member.")
     with transaction.atomic():
+        # Lock the idea so a double-tapped button can't create two awards.
+        locked = Idea.objects.select_for_update().get(pk=idea.pk)
+        if locked.status != Status.APPROVED:
+            raise WorkflowError("This idea has already been awarded.")
+        # An award can be left behind without the idea being marked awarded (for
+        # example, one added by hand in the Admin site). Replace it, and keep a record.
+        leftover = Award.objects.filter(idea=idea).first()
+        if leftover:
+            record("award.replaced", target=idea.reference, actor=actor,
+                   detail=f"Replaced an incomplete award ({leftover.get_category_display()}) from {leftover.granted_at:%d %b %Y}")
+            leftover.delete()
         award = Award.objects.create(idea=idea, category=category, amount=amount, message=message.strip(), granted_by=actor,
                                      officer=officer)
         today = timezone.localdate()
