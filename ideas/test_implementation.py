@@ -244,3 +244,18 @@ class SeedTakesBackDemoOmangTests(TestCase):
         neo.refresh_from_db()
         self.assertIsNone(tester.omang_hash)
         self.assertTrue(neo.omang_hash)
+
+
+class SeedWithTestersIdeasTests(TestCase):
+    def test_reset_recreates_demo_ideas_even_when_testers_have_ideas(self):
+        from accounts.models import User
+        from ideas.models import Idea
+        call_command("seed_demo", password="Demo-pass-12345", reset_ideas=True)
+        tester = User.objects.create_user("tester2@example.com", "x-Pass-12345")
+        mine = Idea.objects.create(submitter=tester, title="Tester's idea")
+        call_command("seed_demo", password="Demo-pass-12345", reset_ideas=True)
+        self.assertEqual(Idea.objects.filter(submitter__email__endswith="@demo.botlhami.bw").count(), 7)
+        self.assertTrue(Idea.objects.filter(pk=mine.pk).exists())
+        call_command("seed_demo", password="Demo-pass-12345", reset_ideas=True, all_ideas=True)
+        self.assertFalse(Idea.objects.filter(pk=mine.pk).exists())
+        self.assertEqual(Idea.objects.count(), 7)

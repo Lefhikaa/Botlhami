@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from accounts.models import Role, User, omang_hashes
 from ideas import services as svc
-from ideas.models import Criterion, Idea, Notification, Status, StatusEvent
+from ideas.models import Criterion, Idea, IdeaDocument, Notification, Status, StatusEvent
 from support.models import Resource, ServiceLevel, Ticket
 
 # Days each demo idea spent in each status, so the reports show realistic timelines.
@@ -105,9 +105,11 @@ class Command(BaseCommand):
         parser.add_argument("--password", required=True, help="Password for every demo account.")
         parser.add_argument("--reset-ideas", action="store_true",
                             help="Delete the demo applicants' ideas (and their evaluations and alerts) and create them again.")
+        parser.add_argument("--all-ideas", action="store_true",
+                            help="With --reset-ideas: delete every idea, including ones made by testers' own accounts.")
 
     @transaction.atomic
-    def handle(self, *args, password, reset_ideas=False, **opts):
+    def handle(self, *args, password, reset_ideas=False, all_ideas=False, **opts):
         users = {}
         for email, first, last, role, org in PEOPLE:
             u, _ = User.objects.get_or_create(email=email, defaults=dict(first_name=first, last_name=last, role=role, organisation=org, email_verified=True))
@@ -132,19 +134,25 @@ class Command(BaseCommand):
             u.save()
             users[first.lower()] = u
         self.seed_support(users)
+        demo_ideas = Idea.objects.filter(submitter__email__endswith="@demo.botlhami.bw")
         if reset_ideas:
-            demo_ideas = Idea.objects.filter(submitter__email__endswith="@demo.botlhami.bw")
-            Notification.objects.filter(idea__in=demo_ideas).delete()
-            n = demo_ideas.count()
-            demo_ideas.delete()
-            self.stdout.write(f"Deleted {n} demo ideas.")
-        if Idea.objects.exists():
-            self.stdout.write("Ideas already exist; only demo users and help content were refreshed.")
+            doomed = Idea.objects.all() if all_ideas else demo_ideas
+            Notification.objects.filter(idea__in=doomed).delete()
+            for doc in IdeaDocument.objects.filter(idea__in=doomed):
+                doc.file.delete(save=False)
+            n = doomed.count()
+            doomed.delete()
+            self.stdout.write(f"Deleted {n} {'ideas (all of them)' if all_ideas else 'demo ideas'}.")
+        elif demo_ideas.exists():
+            self.stdout.write("Demo ideas already exist; only demo users and help content were refreshed. "
+                              "Add --reset-ideas to recreate them.")
             return
         crit = {c.name: c for c in Criterion.objects.filter(active=True)}
         admin, adj = users["goitseone"], users["kefilwe"]
+        created = []
         for who, data, stage, evals in IDEAS:
             idea = Idea.objects.create(submitter=users[who], ip_declared=True, **data)
+            created.append(idea)
             svc.submit(idea, idea.submitter)
             if stage == "submitted":
                 continue
@@ -158,7 +166,7 @@ class Command(BaseCommand):
                 svc.grant_award(idea, adj, "seed", "Referred to CEDA financing with incubation support.", 250000, officer=users["kabo"])
             elif stage == "revision":
                 svc.decide(idea, adj, Status.REVISION, "Add a seasonal sourcing plan and a cost-per-unit estimate, then resubmit.")
-        for n, idea in enumerate(Idea.objects.order_by("pk")):
+        for n, idea in enumerate(created):
             self.backdate(idea, start_days_ago=[48, 36, 20, 2, 15, 12, 10][n % 7])
         self.demo_progress(users)
         self.stdout.write(self.style.SUCCESS(f"Created {len(PEOPLE)} demo users and {len(IDEAS)} ideas."))
