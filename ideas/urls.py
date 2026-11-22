@@ -9,6 +9,7 @@ urlpatterns = [
     path("new/", views.idea_edit, name="new"),
     path("<int:pk>/", views.detail, name="detail"),
     path("<int:pk>/edit/", views.idea_edit, name="edit"),
+    path("<int:pk>/delete/", views.delete_draft, name="delete_draft"),
     path("<int:pk>/documents/<int:doc_id>/", views.download_document, name="document"),
     path("<int:pk>/documents/<int:doc_id>/delete/", views.delete_document, name="delete_document"),
     path("<int:pk>/message/", views.post_message, name="message"),

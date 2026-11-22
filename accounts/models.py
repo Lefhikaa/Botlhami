@@ -59,12 +59,25 @@ def omang_problem(number):
     return None
 
 
-def omang_hash(number):
+def _keyed_hash(key, number):
     import hashlib
     import hmac
     digits = "".join(ch for ch in str(number) if ch.isdigit())
-    key = (getattr(settings, "OMANG_PEPPER", "") or settings.SECRET_KEY).encode()
-    return hmac.new(key, digits.encode(), hashlib.sha256).hexdigest()
+    return hmac.new(key.encode(), digits.encode(), hashlib.sha256).hexdigest()
+
+
+def omang_hash(number):
+    """The code stored for an Omang number, made with OMANG_PEPPER (or SECRET_KEY if none is set)."""
+    return _keyed_hash(getattr(settings, "OMANG_PEPPER", "") or settings.SECRET_KEY, number)
+
+
+def omang_hashes(number):
+    """Every code this number may be stored under: the current one, plus the SECRET_KEY code
+    used before OMANG_PEPPER was set, so accounts registered earlier are still recognised."""
+    codes = [omang_hash(number)]
+    if getattr(settings, "OMANG_PEPPER", ""):
+        codes.append(_keyed_hash(settings.SECRET_KEY, number))
+    return codes
 
 
 class User(AbstractUser):

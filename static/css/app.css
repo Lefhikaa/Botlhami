@@ -755,3 +755,4 @@ html[data-theme] .sidebar .sb-search input#sb-q { background: transparent; borde
 .btn:not(.btn-primary):not(.btn-ok):not(.btn-bad)[data-loading], .sb-item[data-loading], .linklike[data-loading] { --spin: var(--ink-muted); }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { #page-loader { transition: none; } [data-loading]::after { animation-duration: 1.6s; } }
+.delete-draft { justify-content: flex-end; margin-top: .6rem; }

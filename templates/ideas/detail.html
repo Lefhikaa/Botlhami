@@ -79,7 +79,7 @@
 
   <aside class="stack">
     {% if user.pk == idea.submitter_id %}
-      {% if idea.status == "draft" %}<section class="card"><h3>Draft</h3><p class="small muted">Only you can see this draft.</p><a class="btn btn-primary" href="{% url 'ideas:edit' idea.pk %}">Continue editing</a></section>{% endif %}
+      {% if idea.status == "draft" %}<section class="card"><h3>Draft</h3><p class="small muted">Only you can see this draft.</p><div class="row"><a class="btn btn-primary" href="{% url 'ideas:edit' idea.pk %}">Continue editing</a><form method="post" action="{% url 'ideas:delete_draft' idea.pk %}" class="inline" data-confirm="Delete this draft and its documents? This can't be undone.">{% csrf_token %}<button class="btn btn-bad">Delete draft</button></form></div></section>{% endif %}
       {% if idea.status == "revision" %}<section class="card warn"><h3>Action needed</h3><p class="small">{{ idea.history.last.note }}</p><a class="btn btn-primary" href="{% url 'ideas:edit' idea.pk %}">Revise and resubmit</a></section>{% endif %}
       {% if idea.status == "awarded" %}<section class="card ok-card"><h3>🏆 {{ idea.award.get_category_display }}</h3>
         {% if idea.award.amount %}<p class="small"><strong>Value:</strong> P{{ idea.award.amount|floatformat:"0g" }}</p>{% endif %}

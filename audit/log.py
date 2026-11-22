@@ -6,9 +6,11 @@ from .models import AuditEvent
 def client_ip(request):
     forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
     ip = forwarded.split(",")[0].strip() if forwarded else request.META.get("REMOTE_ADDR")
-    # Azure's front end can append a port ("1.2.3.4:5678").
+    # Azure's front end can append a port ("1.2.3.4:5678" or "[2001:db8::1]:5678").
     if ip and ip.count(":") == 1 and "." in ip:
         ip = ip.split(":")[0]
+    elif ip and ip.startswith("[") and "]" in ip:
+        ip = ip[1:ip.index("]")]
     return ip or None
 
 

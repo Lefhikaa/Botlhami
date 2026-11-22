@@ -85,6 +85,22 @@ def delete_document(request, pk, doc_id):
     return redirect("ideas:edit", pk=idea.pk)
 
 
+@require_POST
+@role_required(Role.SUBMITTER)
+def delete_draft(request, pk):
+    """An applicant deletes one of their own drafts. Submitted ideas are never deleted."""
+    idea = get_object_or_404(Idea, pk=pk, submitter=request.user)
+    if idea.status != Status.DRAFT:
+        raise PermissionDenied
+    title = idea.title or "Untitled draft"
+    record("idea.draft_deleted", target=f"draft {idea.pk}", detail=title[:200])
+    for doc in idea.documents.all():
+        doc.file.delete(save=False)
+    idea.delete()
+    messages.success(request, f"Deleted the draft “{title}”.")
+    return redirect("ideas:mine")
+
+
 # --- shared -----------------------------------------------------------------
 @login_required
 def detail(request, pk):

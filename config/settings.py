@@ -157,7 +157,9 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = "same-origin"
 
-CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
+# A database cache, so every gunicorn worker shares one count of failed sign-ins and
+# other rate limits (a per-process memory cache let attempts slip between workers).
+CACHES = {"default": env.cache("CACHE_URL", default="dbcache://botlhami_cache")}
 
 SITE_NAME = "Botlhami"
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", default="saxumas@yahoo.com")

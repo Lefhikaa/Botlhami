@@ -202,3 +202,28 @@ class SeedOmangTests(TestCase):
             tumelo.refresh_from_db()
             self.assertEqual(tumelo.omang_hash, omang_hash("999910003"))
             self.assertEqual(tumelo.id_status, User.IdStatus.PENDING)
+
+
+class DeleteDraftTests(TestCase):
+    def setUp(self):
+        from accounts.models import Role
+        from ideas.tests import make_user
+        self.me = make_user("drafter@example.com", Role.SUBMITTER)
+        self.other = make_user("other@example.com", Role.SUBMITTER)
+
+    def test_applicant_deletes_own_draft(self):
+        from ideas.models import Idea
+        d = Idea.objects.create(submitter=self.me, title="Half an idea")
+        self.client.force_login(self.me)
+        r = self.client.post(reverse("ideas:delete_draft", args=[d.pk]))
+        self.assertRedirects(r, reverse("ideas:mine"))
+        self.assertFalse(Idea.objects.filter(pk=d.pk).exists())
+
+    def test_submitted_ideas_and_other_peoples_drafts_are_safe(self):
+        from ideas.models import Idea, Status
+        sent = Idea.objects.create(submitter=self.me, title="Sent", status=Status.SUBMITTED, reference="IDX-T-9")
+        theirs = Idea.objects.create(submitter=self.other, title="Theirs")
+        self.client.force_login(self.me)
+        self.assertEqual(self.client.post(reverse("ideas:delete_draft", args=[sent.pk])).status_code, 403)
+        self.assertEqual(self.client.post(reverse("ideas:delete_draft", args=[theirs.pk])).status_code, 404)
+        self.assertEqual(Idea.objects.filter(pk__in=[sent.pk, theirs.pk]).count(), 2)

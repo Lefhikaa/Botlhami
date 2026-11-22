@@ -41,6 +41,7 @@
     <button class="btn btn-primary" name="action" value="submit">{% if idea.status == "revision" %}Resubmit for review{% else %}Submit idea{% endif %}</button>
   </div>
 </form>
+{% if idea.pk and idea.status == "draft" %}<form method="post" action="{% url 'ideas:delete_draft' idea.pk %}" class="row delete-draft" data-confirm="Delete this draft and its documents? This can't be undone.">{% csrf_token %}<button class="btn btn-bad btn-sm">Delete draft</button></form>{% endif %}
 {% for d in idea.documents.all %}<form id="del-{{ d.pk }}" method="post" action="{% url 'ideas:delete_document' idea.pk d.pk %}">{% csrf_token %}</form>{% endfor %}
 <script src="{% load static %}{% static 'js/completeness.js' %}" defer></script>
 {% endblock %}

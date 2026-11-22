@@ -215,3 +215,41 @@ class OmangTests(TestCase):
             # applicants can't open other people's documents
             self.client.force_login(u)
             self.assertEqual(self.client.get(reverse("accounts:id_document", args=[u.pk])).status_code, 403)
+
+
+class TesterFindingsTests(TestCase):
+    """Findings from the full test checklist, 22 November."""
+
+    def test_omang_saved_before_the_pepper_is_still_recognised(self):
+        from django.conf import settings
+        from django.test import override_settings
+        from accounts.forms import clean_omang_number
+        from accounts.models import User, _keyed_hash, omang_hash
+        from django import forms as djforms
+        u = User.objects.create_user("early@example.com", "x-Pass-12345")
+        u.omang_hash = _keyed_hash(settings.SECRET_KEY, "123412345")
+        u.omang_last4 = "2345"
+        u.save()
+        with override_settings(OMANG_PEPPER="pepper-set-later"):
+            with self.assertRaises(djforms.ValidationError):
+                clean_omang_number("123412345")
+            u.refresh_from_db()
+            self.assertEqual(u.omang_hash, omang_hash("123412345"))  # moved onto the new key
+
+    def test_lockout_after_exactly_five_wrong_passwords(self):
+        from accounts.models import User
+        User.objects.create_user("lock@example.com", "x-Pass-12345", email_verified=True)
+        url = reverse("accounts:login")
+        for i in range(5):
+            r = self.client.post(url, {"username": "lock@example.com", "password": "wrong"}, REMOTE_ADDR="10.0.0.1",
+                                 HTTP_X_FORWARDED_FOR=f"102.1.2.3:{5000 + i}")
+            self.assertNotContains(r, "Too many failed attempts")
+        r = self.client.post(url, {"username": "lock@example.com", "password": "x-Pass-12345"},
+                             HTTP_X_FORWARDED_FOR="102.1.2.3:6001")
+        self.assertContains(r, "Too many failed attempts")
+
+    def test_ipv6_port_is_stripped(self):
+        from django.test import RequestFactory
+        from audit.log import client_ip
+        req = RequestFactory().get("/", HTTP_X_FORWARDED_FOR="[2001:db8::1]:5678")
+        self.assertEqual(client_ip(req), "2001:db8::1")

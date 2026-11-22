@@ -7,7 +7,7 @@
     <div class="row"><span class="tag">{{ idea.reference }}</span>{% status_pill idea %}</div>
     <h2 class="idea-title"><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h2>
     <p class="muted small">{{ idea.sector|default:"No sector yet" }} · updated {{ idea.updated_at|date:"j M Y" }}</p>
-    {% if idea.status == "draft" %}<a class="btn btn-primary btn-sm" href="{% url 'ideas:edit' idea.pk %}">Continue draft</a>
+    {% if idea.status == "draft" %}<a class="btn btn-primary btn-sm" href="{% url 'ideas:edit' idea.pk %}">Continue draft</a><form method="post" action="{% url 'ideas:delete_draft' idea.pk %}" class="inline" data-confirm="Delete this draft and its documents? This can't be undone.">{% csrf_token %}<button class="btn btn-sm btn-bad">Delete</button></form>
     {% elif idea.status == "revision" %}<a class="btn btn-primary btn-sm" href="{% url 'ideas:edit' idea.pk %}">Revise and resubmit</a>{% endif %}
   </div>
   <div>{% if idea.status != "draft" %}{% stepper idea %}{% else %}<p class="muted small">Not submitted yet. Only you can see drafts.</p>{% endif %}</div>

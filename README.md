@@ -30,6 +30,7 @@ python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\act
 pip install -r requirements.txt
 cp .env.example .env
 python manage.py migrate
+python manage.py createcachetable
 python manage.py createsuperuser
 python manage.py runserver
 ```

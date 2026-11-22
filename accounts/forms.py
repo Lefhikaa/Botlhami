@@ -4,7 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm
 
 import os
 
-from .models import User, omang_hash, omang_problem
+from .models import User, omang_hash, omang_hashes, omang_problem
 
 PHONE_HELP = "Botswana mobile number, e.g. +267 71 234 567"
 ID_TYPES = {".pdf", ".jpg", ".jpeg", ".png"}
@@ -16,9 +16,14 @@ def clean_omang_number(value, user=None):
     problem = omang_problem(value)
     if problem:
         raise forms.ValidationError(problem)
-    taken = User.objects.filter(omang_hash=omang_hash(value))
+    taken = User.objects.filter(omang_hash__in=omang_hashes(value))
     if user is not None and user.pk:
         taken = taken.exclude(pk=user.pk)
+    earlier = taken.exclude(omang_hash=omang_hash(value)).first()
+    if earlier:
+        # Registered before OMANG_PEPPER was set: move it onto the current key while we know the number.
+        earlier.omang_hash = omang_hash(value)
+        earlier.save(update_fields=["omang_hash"])
     if taken.exists():
         raise forms.ValidationError("This Omang number is already registered. Each citizen can have one account: "
                                     "sign in, or contact CEDA if you think this is a mistake.")
