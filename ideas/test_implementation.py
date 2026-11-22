@@ -187,3 +187,18 @@ class LeftoverAwardTests(TestCase):
         from django.contrib.admin.sites import site
         from ideas.models import Award
         self.assertFalse(site._registry[Award].has_add_permission(None))
+
+
+class SeedOmangTests(TestCase):
+    def test_reseed_rehashes_demo_omang_and_resets_checks(self):
+        from django.test import override_settings
+        from accounts.models import User, omang_hash
+        call_command("seed_demo", password="Demo-pass-12345")
+        tumelo = User.objects.get(email="tumelo.phiri@demo.botlhami.bw")
+        tumelo.id_status = User.IdStatus.VERIFIED
+        tumelo.save()
+        with override_settings(OMANG_PEPPER="a-new-pepper-value"):
+            call_command("seed_demo", password="Demo-pass-12345")
+            tumelo.refresh_from_db()
+            self.assertEqual(tumelo.omang_hash, omang_hash("999910003"))
+            self.assertEqual(tumelo.id_status, User.IdStatus.PENDING)
