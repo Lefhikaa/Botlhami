@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
-from accounts.models import Role, User
+from accounts.models import Role, User, omang_hashes
 from ideas import services as svc
 from ideas.models import Criterion, Idea, Notification, Status, StatusEvent
 from support.models import Resource, ServiceLevel, Ticket
@@ -116,6 +116,12 @@ class Command(BaseCommand):
                 # Made-up numbers in the valid format (nine digits, middle digit 1 or 2), clearly not real people.
                 # Saved again on every run, so they always use the current OMANG_PEPPER, and the demo
                 # identity states (Tumelo waiting for a check) come back after testing.
+                # The demo numbers are made up and reserved for the demo. If another account
+                # was registered with one (during testing), take it back so the reset can't fail.
+                for other in User.objects.filter(omang_hash__in=omang_hashes(DEMO_OMANG[first])).exclude(pk=u.pk):
+                    other.omang_hash, other.omang_last4, other.id_status = None, "", User.IdStatus.NONE
+                    other.save(update_fields=["omang_hash", "omang_last4", "id_status"])
+                    self.stdout.write(f"Removed demo Omang ending {DEMO_OMANG[first][-4:]} from {other.email}.")
                 u.set_omang(DEMO_OMANG[first])
                 if not u.id_document:
                     pdf = simple_pdf("DEMO OMANG COPY", [f"{first} {last}", f"Omang ending {u.omang_last4}",

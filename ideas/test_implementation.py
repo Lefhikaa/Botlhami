@@ -227,3 +227,20 @@ class DeleteDraftTests(TestCase):
         self.assertEqual(self.client.post(reverse("ideas:delete_draft", args=[sent.pk])).status_code, 403)
         self.assertEqual(self.client.post(reverse("ideas:delete_draft", args=[theirs.pk])).status_code, 404)
         self.assertEqual(Idea.objects.filter(pk__in=[sent.pk, theirs.pk]).count(), 2)
+
+
+class SeedTakesBackDemoOmangTests(TestCase):
+    def test_reset_frees_a_demo_omang_used_by_a_test_account(self):
+        from accounts.models import User
+        call_command("seed_demo", password="Demo-pass-12345")
+        neo = User.objects.get(email="neo.kgosi@demo.botlhami.bw")
+        neo.omang_hash = None
+        neo.save()
+        tester = User.objects.create_user("tester@example.com", "x-Pass-12345")
+        tester.set_omang("999910001")
+        tester.save()
+        call_command("seed_demo", password="Demo-pass-12345", reset_ideas=True)
+        tester.refresh_from_db()
+        neo.refresh_from_db()
+        self.assertIsNone(tester.omang_hash)
+        self.assertTrue(neo.omang_hash)
