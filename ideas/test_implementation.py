@@ -259,3 +259,10 @@ class SeedWithTestersIdeasTests(TestCase):
         call_command("seed_demo", password="Demo-pass-12345", reset_ideas=True, all_ideas=True)
         self.assertFalse(Idea.objects.filter(pk=mine.pk).exists())
         self.assertEqual(Idea.objects.count(), 7)
+
+
+class SeedSendsNoEmailTests(TestCase):
+    def test_demo_reset_sends_no_email(self):
+        from django.core import mail
+        call_command("seed_demo", password="Demo-pass-12345", reset_ideas=True)
+        self.assertEqual(len(mail.outbox), 0)

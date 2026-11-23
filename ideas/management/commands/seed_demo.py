@@ -108,8 +108,15 @@ class Command(BaseCommand):
         parser.add_argument("--all-ideas", action="store_true",
                             help="With --reset-ideas: delete every idea, including ones made by testers' own accounts.")
 
+    def handle(self, *args, **opts):
+        # Building the demo replays the workflow, which would email every alert (to real
+        # admins too). Demo data never sends email.
+        from django.test.utils import override_settings
+        with override_settings(EMAIL_BACKEND="django.core.mail.backends.dummy.EmailBackend"):
+            self.build(**opts)
+
     @transaction.atomic
-    def handle(self, *args, password, reset_ideas=False, all_ideas=False, **opts):
+    def build(self, password, reset_ideas=False, all_ideas=False, **opts):
         users = {}
         for email, first, last, role, org in PEOPLE:
             u, _ = User.objects.get_or_create(email=email, defaults=dict(first_name=first, last_name=last, role=role, organisation=org, email_verified=True))
