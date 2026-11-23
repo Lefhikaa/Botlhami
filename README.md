@@ -6,6 +6,21 @@ It takes ideas from submission through screening, blind expert evaluation and ad
 
 **Live site:** https://botlhami-saxum-dcbngscjene6gqef.southafricanorth-01.azurewebsites.net
 
+## Installation and platforms
+
+Botlhami is a web application, so there is nothing to download or install to use it. It runs in any modern browser (Chrome, Edge, Firefox, Safari) on Windows, macOS, Linux, Android and iOS. Open the live site above, register or sign in, and use it.
+
+There are no platform-specific executables. To run your own copy, install the tools below, then follow **Run it locally** (for a development machine) or [DEPLOYMENT.md](DEPLOYMENT.md) (for Azure).
+
+| Tool | Version | Needed for |
+| --- | --- | --- |
+| Python | 3.12 or later | Running the app (Windows, macOS or Linux) |
+| pip and venv | Included with Python | Installing the packages in `requirements.txt` |
+| Git | Any recent version | Getting the code |
+| PostgreSQL | 16 | Production database (SQLite is used locally, with no setup) |
+| A web browser | Any modern browser | Using the app |
+| Azure account | Optional | Hosting, email (Azure Communication Services) and monitoring |
+
 ## What's built
 
 | Area | What it does |
@@ -24,6 +39,8 @@ It takes ideas from submission through screening, blind expert evaluation and ad
 ## Run it locally
 
 You need Python 3.12 or later.
+
+On Windows, use `copy` instead of `cp` and `.venv\Scripts\activate` to activate the environment.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
