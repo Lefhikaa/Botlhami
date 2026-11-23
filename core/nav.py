@@ -55,7 +55,6 @@ def menu(user):
                     _item("My support tickets", "support:tickets", "lifebuoy", c.get("tickets"), match="/support/")]
     if role == Role.EVALUATOR:
         main += [_item("Evaluation queue", "ideas:queue", "clipboard", c.get("queue"), match="/ideas/")]
-        service += [_item("Help centre", "support:help", "help", match="/help/")]
     if role == Role.ADMIN:
         main += [_item("Screening", "ideas:screening", "filter", c.get("screening"))]
     if role in (Role.ADMIN, Role.ADJUDICATOR):

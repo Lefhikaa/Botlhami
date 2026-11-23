@@ -102,6 +102,14 @@ class SidebarTests(TestCase):
         u.save()
         self.assertContains(self.client.get(reverse("ideas:screening")), "Admin site")
 
+    def test_help_centre_listed_once(self):
+        for role in (self.Role.EVALUATOR, self.Role.SUBMITTER, self.Role.ADMIN):
+            self.User.objects.all().delete()
+            self.login(role)
+            html = self.client.get(reverse("support:help")).content.decode()
+            sidebar = html.split('id="sidebar"')[1].split("</aside>")[0]
+            self.assertEqual(sidebar.count('title="Help centre"'), 1, role)
+
     def test_guests_get_the_public_header(self):
         r = self.client.get(reverse("support:help"))
         self.assertNotContains(r, 'id="sidebar"')
