@@ -95,6 +95,13 @@ class SidebarTests(TestCase):
         self.client.force_login(u)
         return u
 
+    def test_admin_site_link_only_for_staff_accounts(self):
+        u = self.login(self.Role.ADMIN)
+        self.assertNotContains(self.client.get(reverse("ideas:screening")), "Admin site")
+        u.is_staff = True
+        u.save()
+        self.assertContains(self.client.get(reverse("ideas:screening")), "Admin site")
+
     def test_guests_get_the_public_header(self):
         r = self.client.get(reverse("support:help"))
         self.assertNotContains(r, 'id="sidebar"')

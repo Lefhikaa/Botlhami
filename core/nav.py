@@ -73,8 +73,9 @@ def menu(user):
                     _item("Support desk", "support:queue", "lifebuoy", c.get("support"), match="/support/"),
                     _item("ID checks", "accounts:id_queue", "idcard", c.get("ids"), match="/accounts/identity/checks/")]
     if role == Role.ADMIN:
-        manage += [_item("Content", "support:manage_home", "file", match="/manage/"),
-                   _item("Admin site", "admin:index", "settings", match="/admin/")]
+        manage += [_item("Content", "support:manage_home", "file", match="/manage/")]
+    if role == Role.ADMIN and user.is_staff:
+        manage += [_item("Admin site", "admin:index", "settings", match="/admin/")]
 
     sections = [("Main menu", main), ("Service", service), ("Manage", manage)]
     return [(title, [i for i in items if i]) for title, items in sections if any(items)]
