@@ -266,3 +266,20 @@ class SeedSendsNoEmailTests(TestCase):
         from django.core import mail
         call_command("seed_demo", password="Demo-pass-12345", reset_ideas=True)
         self.assertEqual(len(mail.outbox), 0)
+
+
+class ScreeningAcceptTests(TestCase):
+    """Accept and assign must not be blocked by the browser's check on the return note."""
+
+    def test_accept_button_skips_the_return_note_check(self):
+        from django.urls import reverse
+        from accounts.models import Role
+        from ideas.models import Idea, Status
+        from ideas.tests import make_user
+        admin = make_user("screen-admin@example.com", Role.ADMIN)
+        sub = make_user("screen-sub@example.com", Role.SUBMITTER)
+        make_user("screen-ev@example.com", Role.EVALUATOR)
+        idea = Idea.objects.create(submitter=sub, title="Screen me", status=Status.SUBMITTED, reference="IDX-T-9")
+        self.client.force_login(admin)
+        html = self.client.get(reverse("ideas:detail", args=[idea.pk])).content.decode()
+        self.assertIn('value="accept" formnovalidate', html)

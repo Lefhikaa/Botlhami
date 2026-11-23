@@ -110,7 +110,7 @@
       {% endwith %}
       <p class="label">Assign evaluators ({{ ws.evaluators_per_idea }} needed)</p>
       {% for ev in evaluators %}<label class="check"><input type="checkbox" name="evaluators" value="{{ ev.pk }}"> <span>{{ ev }} <span class="muted small">· {{ ev.open_reviews }} open</span></span></label>{% empty %}<p class="muted small">No evaluators yet. Add users with the Evaluator role.</p>{% endfor %}
-      <button class="btn btn-primary btn-block" name="action" value="accept">Accept and assign</button>
+      <button class="btn btn-primary btn-block" name="action" value="accept" formnovalidate>Accept and assign</button>
       <div class="field mt">{{ return_form.note.label_tag }}{{ return_form.note }}</div>
       <button class="btn btn-block" name="action" value="return">Return to applicant</button>
     </form>
